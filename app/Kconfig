@@ -213,6 +213,10 @@ config ZMK_BLE_MOUSE_REPORT_QUEUE_SIZE
     int "Max number of mouse HID reports to queue for sending over BLE"
     default 20
 
+config ZMK_BLE_PTP_REPORT_QUEUE_SIZE
+    int "Max number of trackpad HID reports to queue for sending over BLE"
+    default 20
+
 config ZMK_BLE_CLEAR_BONDS_ON_START
     bool "Configuration that clears all bond information from the keyboard on startup."
 
@@ -373,6 +377,70 @@ config ZMK_MOUSE
     bool "Enable ZMK mouse emulation"
 
 #Mouse Options
+endmenu
+
+menuconfig ZMK_TRACKPAD
+    bool "Enable ZMK trackpad emulation"
+    default n
+
+config ZMK_TRACKPAD_MOUSE_MODE
+    bool "Enable optional additional mouse emulation"
+    default n
+
+config ZMK_TRACKPAD_TICK_DURATION
+    int "Trackpad tick duration in ms"
+    default 8
+
+config ZMK_TRACKPAD_MAX_FINGERS
+    int "Maximum number of fingers reported in PTP"
+    range 3 5
+    default 5
+
+config ZMK_TRACKPAD_PHYSICAL_X
+    int "Maximum X size of trackpad in 0.1cm increments"
+    default 600
+
+config ZMK_TRACKPAD_PHYSICAL_Y
+    int "Maximum Y size of trackpad in 0.1cm increments"
+    default 600
+
+config ZMK_TRACKPAD_LOGICAL_X
+    int "Maximum X coordinate value trackpad can report"
+    default 4095
+
+config ZMK_TRACKPAD_LOGICAL_Y
+    int "Maximum Y coordinate value trackpad can report"
+    default 4095
+
+
+if ZMK_TRACKPAD
+
+choice ZMK_TRACKPAD_WORK_QUEUE
+    prompt "Work queue selection for trackpad events"
+    default ZMK_TRACKPAD_WORK_QUEUE_DEDICATED
+
+config ZMK_TRACKPAD_WORK_QUEUE_SYSTEM
+    bool "Use default system work queue for trackpad events"
+
+config ZMK_TRACKPAD_WORK_QUEUE_DEDICATED
+    bool "Use dedicated work queue for trackpad events"
+
+endchoice
+
+if ZMK_TRACKPAD_WORK_QUEUE_DEDICATED
+
+config ZMK_TRACKPAD_DEDICATED_THREAD_STACK_SIZE
+    int "Stack size for dedicated trackpad thread/queue"
+    default 8192
+
+config ZMK_TRACKPAD_DEDICATED_THREAD_PRIORITY
+    int "Thread priority for dedicated trackpad thread/queue"
+    default 3
+
+endif # ZMK_TRACKPAD_WORK_QUEUE_DEDICATED
+
+endif
+
 endmenu
 
 menu "Power Management"
