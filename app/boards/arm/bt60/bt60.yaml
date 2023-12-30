@@ -1,5 +1,5 @@
-identifier: bt60_v1
-name: BT60 V1 Soldered
+identifier: bt60
+name: bt60
 type: mcu
 arch: arm
 toolchain:
