@@ -61,7 +61,8 @@ static int get_report_cb(const struct device *dev, struct usb_setup_packet *setu
      * 7.2.1 of the HID v1.11 spec is unclear about handling requests for reports that do not exist
      * For requested reports that aren't input reports, return -ENOTSUP like the Zephyr subsys does
      */
-    if ((setup->wValue & HID_GET_REPORT_TYPE_MASK) != HID_REPORT_TYPE_INPUT) {
+    if (!(((setup->wValue & HID_GET_REPORT_TYPE_MASK) == HID_REPORT_TYPE_INPUT) ||
+          ((setup->wValue & HID_GET_REPORT_TYPE_MASK) == HID_REPORT_TYPE_FEATURE))) {
         LOG_ERR("Unsupported report type %d requested", (setup->wValue & HID_GET_REPORT_TYPE_MASK)
                                                             << 8);
         return -ENOTSUP;
@@ -78,6 +79,32 @@ static int get_report_cb(const struct device *dev, struct usb_setup_packet *setu
         *len = sizeof(*report);
         break;
     }
+#if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
+    case ZMK_HID_REPORT_ID_FEATURE_PTP_SELECTIVE: {
+        struct zmk_hid_feature_selective_report *report =
+            zmk_hid_ptp_get_feature_selective_report();
+        *data = (uint8_t *)report;
+        LOG_DBG("Selective report get %d", 0);
+        *len = sizeof(*report);
+        break;
+    }
+    case ZMK_HID_REPORT_ID_FEATURE_PTPHQA: {
+        struct zmk_hid_feature_certification_report *report =
+            zmk_hid_ptp_get_feature_certification_report();
+        *data = (uint8_t *)report;
+        LOG_DBG("certification report get %d", 0);
+        *len = sizeof(*report);
+        break;
+    }
+    case ZMK_HID_REPORT_ID_FEATURE_PTP_CAPABILITIES: {
+        struct zmk_hid_feature_capabilities_report *report =
+            zmk_hid_ptp_get_feature_capabilities_report();
+        *data = (uint8_t *)report;
+        LOG_DBG("capabilities report get %d", 0);
+        *len = sizeof(*report);
+        break;
+    }
+#endif
     default:
         LOG_ERR("Invalid report ID %d requested", setup->wValue & HID_GET_REPORT_ID_MASK);
         return -EINVAL;
@@ -88,7 +115,8 @@ static int get_report_cb(const struct device *dev, struct usb_setup_packet *setu
 
 static int set_report_cb(const struct device *dev, struct usb_setup_packet *setup, int32_t *len,
                          uint8_t **data) {
-    if ((setup->wValue & HID_GET_REPORT_TYPE_MASK) != HID_REPORT_TYPE_OUTPUT) {
+    if (!(((setup->wValue & HID_GET_REPORT_TYPE_MASK) == HID_REPORT_TYPE_OUTPUT) ||
+          ((setup->wValue & HID_GET_REPORT_TYPE_MASK) == HID_REPORT_TYPE_FEATURE))) {
         LOG_ERR("Unsupported report type %d requested",
                 (setup->wValue & HID_GET_REPORT_TYPE_MASK) >> 8);
         return -ENOTSUP;
