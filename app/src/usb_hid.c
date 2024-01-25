@@ -104,6 +104,13 @@ static int get_report_cb(const struct device *dev, struct usb_setup_packet *setu
         *len = sizeof(*report);
         break;
     }
+    case ZMK_HID_REPORT_ID_FEATURE_PTP_MODE: {
+        struct zmk_hid_ptp_feature_mode_report *report = zmk_hid_ptp_get_feature_mode_report();
+        *data = (uint8_t *)report;
+        LOG_DBG("mode report get %d", 0);
+        *len = sizeof(*report);
+        break;
+    }
 #endif
     default:
         LOG_ERR("Invalid report ID %d requested", setup->wValue & HID_GET_REPORT_ID_MASK);
@@ -137,6 +144,19 @@ static int set_report_cb(const struct device *dev, struct usb_setup_packet *setu
         }
         break;
 #endif // IS_ENABLED(CONFIG_ZMK_HID_INDICATORS)
+#if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
+    case ZMK_HID_REPORT_ID_FEATURE_PTP_MODE: {
+        if (*len != sizeof(struct zmk_hid_ptp_feature_mode_report)) {
+            LOG_ERR("PTP Mode set report is malformed: length=%d", *len);
+            return -EINVAL;
+        } else {
+            struct zmk_hid_ptp_feature_mode_report *report =
+                (struct zmk_hid_ptp_feature_mode_report *)*data;
+            zmk_hid_ptp_set_feature_mode_report(&report->mode);
+        }
+        break;
+    }
+#endif
     default:
         LOG_ERR("Invalid report ID %d requested", setup->wValue & HID_GET_REPORT_ID_MASK);
         return -EINVAL;
@@ -204,6 +224,19 @@ int zmk_usb_hid_send_mouse_report() {
     return zmk_usb_hid_send_report((uint8_t *)report, sizeof(*report));
 }
 #endif // IS_ENABLED(CONFIG_ZMK_MOUSE)
+
+#if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
+int zmk_usb_hid_send_ptp_report() {
+#if IS_ENABLED(CONFIG_ZMK_USB_BOOT)
+    if (hid_protocol == HID_PROTOCOL_BOOT) {
+        return -ENOTSUP;
+    }
+#endif /* IS_ENABLED(CONFIG_ZMK_USB_BOOT) */
+
+    struct zmk_hid_ptp_report *report = zmk_hid_get_ptp_report();
+    return zmk_usb_hid_send_report((uint8_t *)report, sizeof(*report));
+}
+#endif // IS_ENABLED(CONFIG_ZMK_TRACKPAD)
 
 static int zmk_usb_hid_init(void) {
     hid_dev = device_get_binding("HID_0");

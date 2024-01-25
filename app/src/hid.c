@@ -10,7 +10,9 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 #include <zmk/hid.h>
 #include <dt-bindings/zmk/modifiers.h>
+#if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
 #include <zmk/trackpad.h>
+#endif
 
 static struct zmk_hid_keyboard_report keyboard_report = {
 
@@ -29,7 +31,7 @@ static uint8_t keys_held = 0;
 #if IS_ENABLED(CONFIG_ZMK_MOUSE)
 
 static struct zmk_hid_mouse_report mouse_report = {
-    .report_id = ZMK_HID_REPORT_ID_MOUSE, .body = {.buttons = 0.d_x = 0, .d_y = 0, .d_wheel = 0}};
+    .report_id = ZMK_HID_REPORT_ID_MOUSE, .body = {.buttons = 0, .d_x = 0, .d_y = 0, .d_wheel = 0}};
 
 #endif // IS_ENABLED(CONFIG_ZMK_MOUSE)
 
@@ -49,7 +51,7 @@ struct zmk_hid_ptp_feature_selective_report ptp_feature_selective_report = {
 
 // Feature report for input mode
 struct zmk_hid_ptp_feature_mode_report ptp_feature_mode_report = {
-    .report_id = ZMK_HID_REPORT_ID_FEATURE_PTP_CONFIGURATION, .mode = 0};
+    .report_id = ZMK_HID_REPORT_ID_FEATURE_PTP_MODE, .mode = 0};
 
 // Feature report for ptphqa
 struct zmk_hid_ptp_feature_certification_report ptp_feature_certification_report = {
