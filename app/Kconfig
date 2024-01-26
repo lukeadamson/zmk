@@ -379,7 +379,9 @@ config ZMK_MOUSE
 #Mouse Options
 endmenu
 
-menuconfig ZMK_TRACKPAD
+menu "Trackpad options"
+
+config ZMK_TRACKPAD
     bool "Enable ZMK trackpad emulation"
     default n
 

@@ -81,7 +81,7 @@ static int get_report_cb(const struct device *dev, struct usb_setup_packet *setu
     }
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
     case ZMK_HID_REPORT_ID_FEATURE_PTP_SELECTIVE: {
-        struct zmk_hid_feature_selective_report *report =
+        struct zmk_hid_ptp_feature_selective_report *report =
             zmk_hid_ptp_get_feature_selective_report();
         *data = (uint8_t *)report;
         LOG_DBG("Selective report get %d", 0);
@@ -89,7 +89,7 @@ static int get_report_cb(const struct device *dev, struct usb_setup_packet *setu
         break;
     }
     case ZMK_HID_REPORT_ID_FEATURE_PTPHQA: {
-        struct zmk_hid_feature_certification_report *report =
+        struct zmk_hid_ptp_feature_certification_report *report =
             zmk_hid_ptp_get_feature_certification_report();
         *data = (uint8_t *)report;
         LOG_DBG("certification report get %d", 0);
@@ -97,7 +97,7 @@ static int get_report_cb(const struct device *dev, struct usb_setup_packet *setu
         break;
     }
     case ZMK_HID_REPORT_ID_FEATURE_PTP_CAPABILITIES: {
-        struct zmk_hid_feature_capabilities_report *report =
+        struct zmk_hid_ptp_feature_capabilities_report *report =
             zmk_hid_ptp_get_feature_capabilities_report();
         *data = (uint8_t *)report;
         LOG_DBG("capabilities report get %d", 0);
@@ -152,7 +152,7 @@ static int set_report_cb(const struct device *dev, struct usb_setup_packet *setu
         } else {
             struct zmk_hid_ptp_feature_mode_report *report =
                 (struct zmk_hid_ptp_feature_mode_report *)*data;
-            zmk_hid_ptp_set_feature_mode_report(&report->mode);
+            zmk_hid_ptp_set_feature_mode_report(report->mode);
         }
         break;
     }

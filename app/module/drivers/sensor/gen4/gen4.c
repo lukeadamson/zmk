@@ -67,6 +67,7 @@ static int gen4_attr_set(const struct device *dev, enum sensor_channel chan,
     default:
         break;
     }
+    return -EIO;
 }
 
 static int gen4_channel_get(const struct device *dev, enum sensor_channel chan,

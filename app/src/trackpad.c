@@ -4,8 +4,10 @@
 
 #include "zmk/mouse.h"
 #include "zmk/trackpad.h"
-#include "zmk/hid.h"
-#include "zmk/endpoints.h"
+#include <zmk/hid.h>
+#include <zmk/endpoints.h>
+#include <zmk/event_manager.h>
+#include <zmk/events/sensor_event.h>
 #include "drivers/sensor/gen4.h"
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
@@ -19,13 +21,10 @@ static uint8_t btns;
 static uint16_t scantime;
 
 static bool mousemode;
-static bool buttonmode;
-static bool surfacemode;
 
 static int8_t xDelta, yDelta, scrollDelta;
 
 static struct zmk_ptp_finger fingers[CONFIG_ZMK_TRACKPAD_MAX_FINGERS];
-static struct zmk_hid_touchpad_mouse_report_body mouse;
 
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD_WORK_QUEUE_DEDICATED)
 K_THREAD_STACK_DEFINE(trackpad_work_stack_area, CONFIG_ZMK_TRACKPAD_DEDICATED_THREAD_STACK_SIZE);
@@ -101,11 +100,6 @@ static void zmk_trackpad_tick(struct k_work *work) {
 K_WORK_DEFINE(trackpad_work, zmk_trackpad_tick);
 
 static void handle_mouse_mode(const struct device *dev, const struct sensor_trigger *trig) {
-    int ret = sensor_sample_fetch(dev);
-    if (ret < 0) {
-        LOG_ERR("fetch: %d", ret);
-        return;
-    }
     LOG_DBG("Trackpad handler trigd in mouse mode %d", 0);
     int ret = sensor_sample_fetch(dev);
     if (ret < 0) {
@@ -153,13 +147,11 @@ void zmk_trackpad_set_mouse_mode(bool mouse_mode) {
     if (mouse_mode) {
         if (sensor_trigger_set(trackpad, &trigger, handle_mouse_mode) < 0) {
             LOG_ERR("can't set trigger mouse mode");
-            return -EIO;
         };
     } else {
         k_timer_start(&trackpad_tick, K_NO_WAIT, K_MSEC(CONFIG_ZMK_TRACKPAD_TICK_DURATION));
         if (sensor_trigger_set(trackpad, &trigger, handle_trackpad_ptp) < 0) {
             LOG_ERR("can't set trigger");
-            return -EIO;
         };
     }
 }
@@ -174,4 +166,4 @@ static int trackpad_init() {
     return 0;
 }
 
-SYS_INIT(trackpad_init, APPLICATION, CONFIG_ZMK_KSCAN_INIT_PRIORITY);
+SYS_INIT(trackpad_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);

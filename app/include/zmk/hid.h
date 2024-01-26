@@ -613,6 +613,8 @@ struct zmk_hid_keyboard_report *zmk_hid_get_keyboard_report(void);
 struct zmk_hid_consumer_report *zmk_hid_get_consumer_report(void);
 
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
+void zmk_hid_ptp_set(struct zmk_ptp_finger finger, uint8_t contact_count, uint16_t scan_time,
+                     uint8_t buttons);
 struct zmk_hid_ptp_report *zmk_hid_get_ptp_report();
 struct zmk_hid_ptp_feature_selective_report *zmk_hid_ptp_get_feature_selective_report();
 void zmk_hid_ptp_set_feature_selective_report(uint8_t selective_report);
