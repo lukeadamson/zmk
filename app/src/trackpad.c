@@ -145,6 +145,7 @@ void zmk_trackpad_set_mouse_mode(bool mouse_mode) {
     mousemode = mouse_mode;
     sensor_attr_set(trackpad, SENSOR_CHAN_ALL, SENSOR_ATTR_CONFIGURATION, &attr);
     if (mouse_mode) {
+        k_timer_stop(&trackpad_tick);
         if (sensor_trigger_set(trackpad, &trigger, handle_mouse_mode) < 0) {
             LOG_ERR("can't set trigger mouse mode");
         };
