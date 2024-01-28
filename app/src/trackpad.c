@@ -150,6 +150,8 @@ void zmk_trackpad_set_mouse_mode(bool mouse_mode) {
             LOG_ERR("can't set trigger mouse mode");
         };
     } else {
+        zmk_hid_mouse_clear();
+        zmk_endpoints_send_mouse_report();
         k_timer_start(&trackpad_tick, K_NO_WAIT, K_MSEC(CONFIG_ZMK_TRACKPAD_TICK_DURATION));
         if (sensor_trigger_set(trackpad, &trigger, handle_trackpad_ptp) < 0) {
             LOG_ERR("can't set trigger");

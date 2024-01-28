@@ -536,12 +536,18 @@ struct zmk_hid_ptp_feature_mode_report *zmk_hid_ptp_get_feature_mode_report() {
     return &ptp_feature_mode_report;
 }
 
-void zmk_hid_ptp_set_feature_mode_report(uint8_t mode) {
-    ptp_feature_mode_report.mode = mode;
-    if (mode == 3)
+static void zmk_hid_trackpad_mouse_mode(struct k_work *work) {
+    if (ptp_feature_mode_report.mode == 3)
         zmk_trackpad_set_mouse_mode(true);
     else
         zmk_trackpad_set_mouse_mode(false);
+}
+
+K_WORK_DEFINE(mouse_mode_work, zmk_hid_trackpad_mouse_mode);
+
+void zmk_hid_ptp_set_feature_mode_report(uint8_t mode) {
+    ptp_feature_mode_report.mode = mode;
+    k_work_submit(&mouse_mode_work);
 }
 
 struct zmk_hid_ptp_feature_certification_report *zmk_hid_ptp_get_feature_certification_report() {

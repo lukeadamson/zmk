@@ -30,6 +30,7 @@ static int gen4_abs_mode(const struct device *dev) {
     const struct gen4_config *cfg = dev->config;
     // enable mouse mode
     uint8_t request2[10] = {0x05, 0x00, 0x34, 0x03, 0x06, 0x00, 0x04, 0x00, 0x04, 0x03};
+    LOG_DBG("Entering abs mode");
     int ret = i2c_write_dt(&cfg->bus, request2, 10);
     if (ret < 0) {
         LOG_ERR("ext read status: %d", ret);
@@ -54,6 +55,8 @@ static int gen4_i2c_init(const struct device *dev) {
 
 static int gen4_attr_set(const struct device *dev, enum sensor_channel chan,
                          enum sensor_attribute attr, const struct sensor_value *val) {
+    struct gen4_data *data = dev->data;
+    data->mousemode = val->val1;
     switch (val->val1) {
     case 0:
         LOG_DBG("Entering abs mode");
