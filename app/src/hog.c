@@ -94,6 +94,11 @@ static struct hids_report trackpad_hqa = {
     .type = HIDS_FEATURE,
 };
 
+static struct hids_report trackpad_mode = {
+    .id = ZMK_HID_REPORT_ID_FEATURE_PTP_MODE,
+    .type = HIDS_FEATURE,
+};
+
 static struct hids_report trackpad_selective = {
     .id = ZMK_HID_REPORT_ID_FEATURE_PTP_SELECTIVE,
     .type = HIDS_FEATURE,
@@ -183,6 +188,48 @@ static ssize_t read_hids_trackpad_input_report(struct bt_conn *conn,
                              sizeof(struct zmk_hid_ptp_report_body));
 }
 
+static ssize_t read_hids_trackpad_capabilities_feature_report(struct bt_conn *conn,
+                                                              const struct bt_gatt_attr *attr,
+                                                              void *buf, uint16_t len,
+                                                              uint16_t offset) {
+    uint8_t *report_body = &zmk_hid_ptp_get_feature_capabilities_report()->max_touches;
+    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body, 2);
+}
+
+static ssize_t read_hids_trackpad_certification_feature_report(struct bt_conn *conn,
+                                                               const struct bt_gatt_attr *attr,
+                                                               void *buf, uint16_t len,
+                                                               uint16_t offset) {
+    uint8_t *report_body = &zmk_hid_ptp_get_feature_certification_report()->ptphqa_blob;
+    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body, 256);
+}
+
+static ssize_t write_hids_trackpad_mode_feature_report(struct bt_conn *conn,
+                                                       const struct bt_gatt_attr *attr,
+                                                       const void *buf, uint16_t len,
+                                                       uint16_t offset, uint8_t flags) {
+    if (offset != 0) {
+        return BT_GATT_ERR(BT_ATT_ERR_INVALID_OFFSET);
+    }
+    if (len != sizeof(uint8_t)) {
+        return BT_GATT_ERR(BT_ATT_ERR_INVALID_ATTRIBUTE_LEN);
+    }
+
+    uint8_t *report = (uint8_t *)buf;
+
+    LOG_DBG("Mode report set ble %d", *report);
+    zmk_hid_ptp_set_feature_mode_report(*report);
+
+    return len;
+}
+
+static ssize_t read_hids_trackpad_mode_feature_report(struct bt_conn *conn,
+                                                      const struct bt_gatt_attr *attr, void *buf,
+                                                      uint16_t len, uint16_t offset) {
+    uint8_t *report_body = &zmk_hid_ptp_get_feature_mode_report()->mode;
+    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body, sizeof(uint8_t));
+}
+
 static ssize_t write_hids_trackpad_selective_feature_report(struct bt_conn *conn,
                                                             const struct bt_gatt_attr *attr,
                                                             const void *buf, uint16_t len,
@@ -194,11 +241,10 @@ static ssize_t write_hids_trackpad_selective_feature_report(struct bt_conn *conn
         return BT_GATT_ERR(BT_ATT_ERR_INVALID_ATTRIBUTE_LEN);
     }
 
-    struct zmk_hid_ptp_feature_selective_report *report =
-        (struct zmk_hid_ptp_feature_selective_report *)buf;
+    uint8_t *report = (uint8_t *)buf;
 
-    LOG_DBG("Selective report set %d", report->selective_reporting);
-    zmk_hid_ptp_set_feature_selective_report(report->selective_reporting);
+    LOG_DBG("Selective report set ble %d", *report);
+    zmk_hid_ptp_set_feature_selective_report(*report);
 
     return len;
 }
@@ -211,21 +257,6 @@ static ssize_t read_hids_trackpad_selective_feature_report(struct bt_conn *conn,
     return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body, sizeof(uint8_t));
 }
 
-static ssize_t read_hids_trackpad_certification_feature_report(struct bt_conn *conn,
-                                                               const struct bt_gatt_attr *attr,
-                                                               void *buf, uint16_t len,
-                                                               uint16_t offset) {
-    uint8_t *report_body = &zmk_hid_ptp_get_feature_certification_report()->ptphqa_blob;
-    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body, 256);
-}
-
-static ssize_t read_hids_trackpad_capabilities_feature_report(struct bt_conn *conn,
-                                                              const struct bt_gatt_attr *attr,
-                                                              void *buf, uint16_t len,
-                                                              uint16_t offset) {
-    uint16_t *report_body = &zmk_hid_ptp_get_feature_capabilities_report()->max_touches;
-    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body, 2);
-}
 #endif
 
 // static ssize_t write_proto_mode(struct bt_conn *conn,
@@ -309,6 +340,13 @@ BT_GATT_SERVICE_DEFINE(
                            read_hids_trackpad_certification_feature_report, NULL, NULL),
     BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
                        NULL, &trackpad_hqa),
+    BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT,
+                           BT_GATT_CHRC_READ | BT_GATT_CHRC_WRITE | BT_GATT_CHRC_WRITE_WITHOUT_RESP,
+                           BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT,
+                           read_hids_trackpad_mode_feature_report,
+                           write_hids_trackpad_mode_feature_report, NULL),
+    BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
+                       NULL, &trackpad_mode),
     BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT,
                            BT_GATT_CHRC_READ | BT_GATT_CHRC_WRITE | BT_GATT_CHRC_WRITE_WITHOUT_RESP,
                            BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT,
