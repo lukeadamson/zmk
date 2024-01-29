@@ -182,214 +182,174 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_END_COLLECTION,
 #endif // IS_ENABLED(CONFIG_ZMK_MOUSE)
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
-    //  PTP Touchpad HID with inspiration from osmakari
-    /* USAGE_PAGE (Digitizers) */
     HID_USAGE_PAGE(HID_USAGE_DIGITIZERS),
-    /* USAGE (Touch Pad) */
     HID_USAGE(HID_USAGE_DIGITIZERS_TOUCH_PAD),
-    /* COLLECTION (Application) */
     HID_COLLECTION(HID_COLLECTION_APPLICATION),
-
-    /* Windows Precision Touchpad Input Reports */
-
-    /* REPORT_ID (0x05) */
+    // Windows Precision Touchpad Input Reports
+    // REPORT_ID (0x05)
     HID_REPORT_ID(ZMK_HID_REPORT_ID_TRACKPAD),
-    /* USAGE (Finger) */
+    // Confidence Tip Switch
     HID_USAGE(HID_USAGE_DIGITIZERS_FINGER),
-    /* COLLECTION (Logical) */
     HID_COLLECTION(HID_COLLECTION_LOGICAL),
-    /* LOGICAL_MINIMUM (0) */
     HID_LOGICAL_MIN8(0),
-    /* LOGICAL_MAXIMUM (1) */
     HID_LOGICAL_MAX8(1),
-    /* USAGE (Confidence) */
+    // USAGE (Confidence)
     HID_USAGE(0x47),
-    /* USAGE (Tip switch) */
+    // USAGE (Tip switch)
     HID_USAGE(0x42),
-    /* REPORT_COUNT (2) */
     HID_REPORT_COUNT(2),
-    /* REPORT_SIZE (1) */
     HID_REPORT_SIZE(1),
-    /* INPUT (Data, Var, Abs) */
     HID_INPUT(0x02),
-    // Padding for bytes
+    // Byte Padding
     HID_REPORT_COUNT(6),
-    /* INPUT (Cnst,Var,Abs) */
     HID_INPUT(0x03),
-    /* REPORT_COUNT (1) */
-    HID_REPORT_COUNT(1),
-    /* REPORT_SIZE (3) */
-    HID_REPORT_SIZE(3),
-    /* LOGICAL_MAXIMUM (24 */
-    HID_LOGICAL_MAX8(5),
-    /* USAGE (Contact Identifier) */
+
+    // Contact ID
     HID_USAGE(HID_USAGE_DIGITIZERS_CONTACT_IDENTIFIER),
-    /* INPUT (Data, Var, Abs) */
+    HID_REPORT_COUNT(1),
+    HID_REPORT_SIZE(3),
+    HID_LOGICAL_MAX8(5),
     HID_INPUT(0x02),
-    /* REPORT_SIZE (1) */
+    // Byte padding
     HID_REPORT_SIZE(1),
-    /* REPORT_COUNT (byte padding) */
     HID_REPORT_COUNT(5),
-    /* INPUT (Cnst,Var,Abs) */
     HID_INPUT(0x03),
-    /* USAGE_PAGE(Generic Desktop) */
+    // X and Y coords
     HID_USAGE_PAGE(HID_USAGE_GD),
-    /* LOGICAL_MINIMUM (0) */
     HID_LOGICAL_MIN8(0),
-    /* LOGICAL_MAXIMUM (4095) */
+    // Defined in KConfig
     HID_LOGICAL_MAX16((CONFIG_ZMK_TRACKPAD_LOGICAL_X & 0xFF),
                       ((CONFIG_ZMK_TRACKPAD_LOGICAL_X >> 8) & 0xFF)),
-    /* REPORT_SIZE (16) */
     HID_REPORT_SIZE(16),
-    /* UNIT_EXPONENT (-2) */
+    // Exponent (-2)
     0x55,
     0x0e,
-    /* UNIT (CM, EngLinear) */
+    // Unit (Linear CM)
     0x65,
     0x11,
-    /* USAGE (X) */
+    // X Usage
     HID_USAGE(HID_USAGE_GD_X),
-    /* PHYSICAL_MINIMUM (0) */
+    // Physical Min (0)
     0x35,
     0x00,
-    /* PHYSICAL_MAXIMUM (defined in config) */
+    // Physical Max (defined in KConfig)
     0x46,
     (CONFIG_ZMK_TRACKPAD_PHYSICAL_X & 0xFF),
     ((CONFIG_ZMK_TRACKPAD_PHYSICAL_X >> 8) & 0xFF),
-    /* REPORT_COUNT (1) */
     HID_REPORT_COUNT(1),
-    /* INPUT (Data, Var, Abs) */
     HID_INPUT(0x02),
-    // Logimax
+
+    // Y Usage
+    HID_USAGE(HID_USAGE_GD_Y),
+    // Defined in KConfig
     HID_LOGICAL_MAX16((CONFIG_ZMK_TRACKPAD_LOGICAL_Y & 0xFF),
                       ((CONFIG_ZMK_TRACKPAD_LOGICAL_Y >> 8) & 0xFF)),
-    /* PHYSICAL_MAXIMUM (Defined in config) */
+    // Physical Max (defined in KConfig)
     0x46,
     (CONFIG_ZMK_TRACKPAD_PHYSICAL_Y & 0xFF),
     ((CONFIG_ZMK_TRACKPAD_PHYSICAL_Y >> 8) & 0xFF),
-    /* USAGE (Y) */
-    HID_USAGE(HID_USAGE_GD_Y),
-    /* INPUT (Data, Var, Abs) */
     HID_INPUT(0x02),
-    /* END_COLLECTION */
     HID_END_COLLECTION,
-    /* USAGE_PAGE (Digitizers) */
+
     HID_USAGE_PAGE(HID_USAGE_DIGITIZERS),
-    // Usage scan time
+    // Scan Time
     HID_USAGE(HID_USAGE_DIGITIZERS_SCAN_TIME),
-    //
+    // Exponent (-4)
     0x55,
-    0x0C, //    UNIT_EXPONENT (-4)
+    0x0C,
+    // Unit (Linear Seconds)
     0x66,
     0x01,
-    0x10, //    UNIT (Seconds)
+    0x10,
+    // Physical Maximum (65535)
     0x47,
     0xff,
     0xff,
     0x00,
-    0x00, //     PHYSICAL_MAXIMUM (65535)
+    0x00,
+    // Logical Maximum (65535)
     0x27,
     0xff,
     0xff,
     0x00,
-    0x00, // Logical Maximum
+    0x00,
+
     HID_REPORT_SIZE(16),
     HID_REPORT_COUNT(1),
-
     HID_INPUT(0x02),
-    // Physmax 0
+    // Contact Count
+    HID_USAGE(HID_USAGE_DIGITIZERS_CONTACT_COUNT),
+    // Physical Maximum (0)
     0x45,
     0x00,
-    /* USAGE (Contact count) */
-    HID_USAGE(HID_USAGE_DIGITIZERS_CONTACT_COUNT),
-    /* LOGICAL_MAXIMUM (5) */
+
     HID_LOGICAL_MAX8(0x05),
-    /* REPORT_COUNT (1) */
     HID_REPORT_COUNT(1),
-    /* REPORT_SIZE (8) */
     HID_REPORT_SIZE(8),
-    /* INPUT(Data, Var, Abs) */
     HID_INPUT(0x02),
 
     // Button report
     HID_USAGE_PAGE(HID_USAGE_GEN_BUTTON),
-    /* USAGE (Button 1) */
+    // Buttons usages (1, 2, 3)
     HID_USAGE(0x01),
     HID_USAGE(0x02),
-    HID_USAGE(0x03), /* LOGICAL_MAXIMUM (1) */
+    HID_USAGE(0x03),
+
     HID_LOGICAL_MAX8(1),
-    /* REPORT_SIZE (1) */
     HID_REPORT_SIZE(1),
-    /* REPORT_COUNT (1) */
     HID_REPORT_COUNT(3),
-    /* INPUT (Data, Var, Abs) */
     HID_INPUT(0x02),
-    /* REPORT_SIZE (1) */
+    // Byte Padding
     HID_REPORT_SIZE(1),
-    /* REPORT_COUNT (byte padding) */
     HID_REPORT_COUNT(5),
-    /* INPUT (Cnst,Var,Abs) */
     HID_INPUT(0x03),
 
-    /* Device Capabilities Feature Report */
+    // Device Capabilities Feature Report
 
-    /* USAGE_PAGE (Digitizer) */
     HID_USAGE_PAGE(HID_USAGE_DIGITIZERS),
-    /* REPORT_ID (0x07) */
     HID_REPORT_ID(ZMK_HID_REPORT_ID_FEATURE_PTP_CAPABILITIES),
-    /* USAGE (Contact Count Maximum) */
     HID_USAGE(HID_USAGE_DIGITIZERS_CONTACT_COUNT_MAXIMUM),
     HID_REPORT_SIZE(8),
     HID_REPORT_COUNT(1),
     HID_LOGICAL_MAX8(0x05),
     HID_FEATURE(0x02),
 
-    HID_LOGICAL_MAX8(0x7F),
-    /* USAGE (Pad Type) */
     HID_USAGE(HID_USAGE_DIGITIZERS_PAD_TYPE),
-    /* FEATURE (Data, Var, Abs) */
+    HID_LOGICAL_MAX8(0x7F),
     HID_FEATURE(0x02),
 
-    /* PTPHQA Blob: Necessary for < Windows 10 */
+    // PTPHQA Blob: Necessary for < Windows 10
 
-    /* USAGE_PAGE (Vendor Defined) */
+    // USAGE_PAGE (Vendor Defined)
     0x06,
     0x00,
     0xff,
-    /* REPORT_ID (0x08) */
+
     HID_REPORT_ID(ZMK_HID_REPORT_ID_FEATURE_PTPHQA),
-    /* HID_USAGE (Vendor Usage 0xC5) */
+    // Vendor Usage 0xC5)
     HID_USAGE(0xC5),
-    /* LOGICAL_MINIMUM (0) */
+
     HID_LOGICAL_MIN8(0),
-    /* LOGICAL_MAXIMUM (0xFF) */
     HID_LOGICAL_MAX16(0xFF, 0x00),
-    /* REPORT_SIZE (8) */
     HID_REPORT_SIZE(8),
-    /* REPORT_COUNT (256) */
+    // Report Count (256)
     0x96,
     0x00,
     0x01,
-    /* FEATURE (Data, Var, Abs) */
+
     HID_FEATURE(0x02),
-    /* END_COLLECTION */
     HID_END_COLLECTION,
 
+    // Configuration collection
     HID_USAGE_PAGE(HID_USAGE_DIGITIZERS),
-
     HID_USAGE(HID_USAGE_DIGITIZERS_DEVICE_CONFIGURATION),
-
     HID_COLLECTION(HID_COLLECTION_APPLICATION),
-    // PUT THE INPUT MODE REPORT HERE
-    // Report ID input mode
+
+    // PTP input mode report
     HID_REPORT_ID(ZMK_HID_REPORT_ID_FEATURE_PTP_MODE),
-    // Finger Usage
     HID_USAGE(HID_USAGE_DIGITIZERS_FINGER),
-    // Logical collection
     HID_COLLECTION(HID_COLLECTION_LOGICAL),
-    // Input mode usage
     HID_USAGE(HID_USAGE_DIGITIZERS_DEVICE_MODE),
-    // Min 0 max 10
     HID_LOGICAL_MIN8(0),
     HID_LOGICAL_MAX8(10),
     HID_REPORT_SIZE(8),
@@ -397,30 +357,22 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_FEATURE(0x02),
     HID_END_COLLECTION,
 
-    /* USAGE (Finger) */
+    // PTP Selective reporting report
     HID_USAGE(HID_USAGE_DIGITIZERS_FINGER),
-    /* COLLECTION (Physical) */
     HID_COLLECTION(HID_COLLECTION_PHYSICAL),
-    /* REPORT_ID (Feature, 0x0A) */
     HID_REPORT_ID(ZMK_HID_REPORT_ID_FEATURE_PTP_SELECTIVE),
-    /* USAGE (Surface switch) */
+
     HID_USAGE(HID_USAGE_DIGITIZERS_SURFACE_SWITCH),
-    /* USAGE (Button switch) */
     HID_USAGE(HID_USAGE_DIGITIZERS_BUTTON_SWITCH),
-    /* REPORT_SIZE (1) */
     HID_REPORT_SIZE(1),
-    /* REPORT_COUNT (2) */
     HID_REPORT_COUNT(2),
-    /* LOGICAL_MAXIMUM (1) */
+
     HID_LOGICAL_MIN8(0),
     HID_LOGICAL_MAX8(1),
-    /* FEATURE (Data, Var, Abs) */
     HID_FEATURE(0x02),
-    /* REPORT_COUNT (6) */
+    // Byte Padding
     HID_REPORT_COUNT(6),
-    /* FEATURE (Cnst, Var, Abs) */
     HID_FEATURE(0x03),
-    /* END_COLLECTION */
     HID_END_COLLECTION,
     HID_END_COLLECTION,
 #endif
@@ -522,7 +474,7 @@ struct zmk_hid_ptp_report_body {
     uint16_t scan_time;
     // Contact count
     uint8_t contact_count;
-    // Buttons /surfaceswitch
+    // Buttons
     uint8_t buttons;
 
 } __packed;

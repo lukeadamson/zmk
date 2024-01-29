@@ -156,6 +156,17 @@ static int set_report_cb(const struct device *dev, struct usb_setup_packet *setu
         }
         break;
     }
+    case ZMK_HID_REPORT_ID_FEATURE_PTP_SELECTIVE: {
+        if (*len != sizeof(struct zmk_hid_ptp_feature_selective_report)) {
+            LOG_ERR("PTP Selective set report is malformed: length=%d", *len);
+            return -EINVAL;
+        } else {
+            struct zmk_hid_ptp_feature_selective_report *report =
+                (struct zmk_hid_ptp_feature_selective_report *)*data;
+            zmk_hid_ptp_set_feature_selective_report(report->selective_reporting);
+        }
+        break;
+    }
 #endif
     default:
         LOG_ERR("Invalid set report ID %d requested", setup->wValue & HID_GET_REPORT_ID_MASK);

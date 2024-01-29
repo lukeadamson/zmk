@@ -503,9 +503,7 @@ void zmk_hid_ptp_set(struct zmk_ptp_finger finger, uint8_t contact_count, uint16
 }
 #endif
 
-struct zmk_hid_keyboard_report *zmk_hid_get_keyboard_report() {
-    return &keyboard_report;
-}
+struct zmk_hid_keyboard_report *zmk_hid_get_keyboard_report() { return &keyboard_report; }
 
 struct zmk_hid_consumer_report *zmk_hid_get_consumer_report(void) {
     return &consumer_report;
@@ -520,9 +518,7 @@ struct zmk_hid_mouse_report *zmk_hid_get_mouse_report(void) {
 #endif // IS_ENABLED(CONFIG_ZMK_MOUSE)
 
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
-struct zmk_hid_ptp_report *zmk_hid_get_ptp_report() {
-    return &ptp_report;
-}
+struct zmk_hid_ptp_report *zmk_hid_get_ptp_report() { return &ptp_report; }
 
 struct zmk_hid_ptp_feature_selective_report *zmk_hid_ptp_get_feature_selective_report() {
     return &ptp_feature_selective_report;
@@ -530,6 +526,7 @@ struct zmk_hid_ptp_feature_selective_report *zmk_hid_ptp_get_feature_selective_r
 
 void zmk_hid_ptp_set_feature_selective_report(uint8_t selective_report) {
     ptp_feature_selective_report.selective_reporting = selective_report;
+    LOG_DBG("Setting selective reporting to: %d", selective_report);
 }
 
 struct zmk_hid_ptp_feature_mode_report *zmk_hid_ptp_get_feature_mode_report() {

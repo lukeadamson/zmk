@@ -21,6 +21,8 @@ static uint8_t btns;
 static uint16_t scantime;
 
 static bool mousemode;
+static bool surface_mode;
+static bool button_mode;
 
 static int8_t xDelta, yDelta, scrollDelta;
 
@@ -39,10 +41,6 @@ struct k_work_q *zmk_trackpad_work_q() {
 #endif
 }
 
-void zmk_trackpad_set_button_mode(bool button_mode) {}
-
-void zmk_trackpad_set_surface_mode(bool surface_mode) {}
-
 static void handle_trackpad_ptp(const struct device *dev, const struct sensor_trigger *trig) {
     int ret = sensor_sample_fetch(dev);
     if (ret < 0) {
@@ -58,7 +56,7 @@ static void handle_trackpad_ptp(const struct device *dev, const struct sensor_tr
     // expects bitmap format
     present_contacts = contacts.val1;
     // Buttons and scan time
-    btns = buttons.val1;
+    btns = button_mode ? buttons.val1 : 0;
     scantime = scan_time.val1;
     // released Fingers
     sensor_channel_get(dev, SENSOR_CHAN_X, &x);
@@ -135,6 +133,12 @@ static void zmk_trackpad_tick_handler(struct k_timer *timer) {
 
 K_TIMER_DEFINE(trackpad_tick, zmk_trackpad_tick_handler, NULL);
 
+void zmk_trackpad_selective_set(uint8_t selective) {
+    surface_mode = selective & BIT(0);
+    button_mode = selective & BIT(1);
+    LOG_DBG("Surface: %d, Button %d", surface_mode, button_mode);
+}
+
 void zmk_trackpad_set_mouse_mode(bool mouse_mode) {
     struct sensor_trigger trigger = {
         .type = SENSOR_TRIG_DATA_READY,
@@ -146,6 +150,7 @@ void zmk_trackpad_set_mouse_mode(bool mouse_mode) {
     sensor_attr_set(trackpad, SENSOR_CHAN_ALL, SENSOR_ATTR_CONFIGURATION, &attr);
     if (mouse_mode) {
         k_timer_stop(&trackpad_tick);
+
         if (sensor_trigger_set(trackpad, &trigger, handle_mouse_mode) < 0) {
             LOG_ERR("can't set trigger mouse mode");
         };
@@ -160,6 +165,8 @@ void zmk_trackpad_set_mouse_mode(bool mouse_mode) {
 }
 
 static int trackpad_init() {
+    button_mode = true;
+    surface_mode = true;
     zmk_trackpad_set_mouse_mode(true);
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD_WORK_QUEUE_DEDICATED)
     k_work_queue_start(&trackpad_work_q, trackpad_work_stack_area,
