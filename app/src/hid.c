@@ -528,9 +528,16 @@ struct zmk_hid_ptp_feature_selective_report *zmk_hid_ptp_get_feature_selective_r
     return &ptp_feature_selective_report;
 }
 
+void zmk_hid_trackpad_selective_mode(struct k_work *work) {
+    zmk_trackpad_selective_set(ptp_feature_selective_report.selective_reporting);
+}
+
+K_WORK_DEFINE(selective_mode_work, zmk_hid_trackpad_selective_mode);
+
 void zmk_hid_ptp_set_feature_selective_report(uint8_t selective_report) {
     ptp_feature_selective_report.selective_reporting = selective_report;
     LOG_DBG("Setting selective reporting to: %d", selective_report);
+    k_work_submit(&selective_mode_work);
 }
 
 struct zmk_hid_ptp_feature_mode_report *zmk_hid_ptp_get_feature_mode_report() {
@@ -539,14 +546,16 @@ struct zmk_hid_ptp_feature_mode_report *zmk_hid_ptp_get_feature_mode_report() {
 
 static void zmk_hid_trackpad_mouse_mode(struct k_work *work) {
     if (ptp_feature_mode_report.mode == 3)
-        zmk_trackpad_set_mouse_mode(true);
-    else
         zmk_trackpad_set_mouse_mode(false);
+    else
+        zmk_trackpad_set_mouse_mode(true);
 }
 
 K_WORK_DEFINE(mouse_mode_work, zmk_hid_trackpad_mouse_mode);
 
 void zmk_hid_ptp_set_feature_mode_report(uint8_t mode) {
+    LOG_DBG("Setting mouse mode to: %d", mode);
+
     ptp_feature_mode_report.mode = mode;
     k_work_submit(&mouse_mode_work);
 }

@@ -8,6 +8,7 @@
 #include <zmk/endpoints.h>
 #include <zmk/event_manager.h>
 #include <zmk/events/sensor_event.h>
+#include <zmk/events/endpoint_changed.h>
 #include "drivers/sensor/gen4.h"
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
@@ -79,10 +80,7 @@ static void handle_trackpad_ptp(const struct device *dev, const struct sensor_tr
 }
 
 static void zmk_trackpad_tick(struct k_work *work) {
-    if (mousemode) {
-        zmk_hid_mouse_set(btns, xDelta, yDelta, scrollDelta);
-        zmk_endpoints_send_mouse_report();
-    } else if (contacts_to_send) {
+    if (contacts_to_send) {
         // LOG_DBG("Trackpad sendy thing trigd %d", 0);
         for (int i = 0; i < CONFIG_ZMK_TRACKPAD_MAX_FINGERS; i++)
             if (contacts_to_send & BIT(i)) {
@@ -115,7 +113,11 @@ static void handle_mouse_mode(const struct device *dev, const struct sensor_trig
     btns = buttons.val1;
     xDelta = x.val1;
     yDelta = y.val1;
+#if IS_ENABLED(CONFIG_ZMK_TRACKPAD_REVERSE_SCROLL)
+    scrollDelta = -wheel.val1;
+#else
     scrollDelta = wheel.val1;
+#endif
 
     ZMK_EVENT_RAISE(new_zmk_sensor_event(
         (struct zmk_sensor_event){.sensor_index = 0,
@@ -123,11 +125,12 @@ static void handle_mouse_mode(const struct device *dev, const struct sensor_trig
                                   .channel_data = {(struct zmk_sensor_channel_data){
                                       .value = buttons, .channel = SENSOR_CHAN_BUTTONS}},
                                   .timestamp = k_uptime_get()}));
-
-    k_work_submit_to_queue(zmk_trackpad_work_q(), &trackpad_work);
+    zmk_hid_mouse_set(btns, xDelta, yDelta, scrollDelta);
+    zmk_endpoints_send_mouse_report();
 }
 
 static void zmk_trackpad_tick_handler(struct k_timer *timer) {
+    LOG_DBG("timer running");
     k_work_submit_to_queue(zmk_trackpad_work_q(), &trackpad_work);
 }
 
@@ -175,5 +178,13 @@ static int trackpad_init() {
 #endif
     return 0;
 }
+
+static int trackpad_event_listener(const zmk_event_t *eh) {
+    zmk_trackpad_set_mouse_mode(true);
+    return 0;
+}
+
+static ZMK_LISTENER(trackpad, trackpad_event_listener);
+static ZMK_SUBSCRIPTION(trackpad, zmk_endpoint_changed);
 
 SYS_INIT(trackpad_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);

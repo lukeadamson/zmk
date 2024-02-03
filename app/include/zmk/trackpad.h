@@ -18,8 +18,6 @@ struct zmk_trackpad_finger_data_t {
 
 void zmk_trackpad_set_mouse_mode(bool mouse_mode);
 
-void zmk_trackpad_set_button_mode(bool button_mode);
-
-void zmk_trackpad_set_surface_mode(bool surface_mode);
+void zmk_trackpad_selective_set(uint8_t selective);
 
 struct k_work_q *zmk_trackpad_work_q();

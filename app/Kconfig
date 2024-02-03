@@ -389,6 +389,10 @@ config ZMK_TRACKPAD_MOUSE_MODE
     bool "Enable optional additional mouse emulation"
     default n
 
+config ZMK_TRACKPAD_REVERSE_SCROLL
+    bool "Reverse scroll direction of trackpad in mosue mode"
+    default n
+
 config ZMK_TRACKPAD_TICK_DURATION
     int "Trackpad tick duration in ms"
     default 8
