@@ -80,7 +80,10 @@ static void handle_trackpad_ptp(const struct device *dev, const struct sensor_tr
 }
 
 static void zmk_trackpad_tick(struct k_work *work) {
-    if (contacts_to_send) {
+    if (mousemode) {
+        zmk_hid_mouse_set(btns, xDelta, yDelta, scrollDelta);
+        zmk_endpoints_send_mouse_report();
+    } else if (contacts_to_send) {
         // LOG_DBG("Trackpad sendy thing trigd %d", 0);
         for (int i = 0; i < CONFIG_ZMK_TRACKPAD_MAX_FINGERS; i++)
             if (contacts_to_send & BIT(i)) {
@@ -102,7 +105,6 @@ static void handle_mouse_mode(const struct device *dev, const struct sensor_trig
         LOG_ERR("fetch: %d", ret);
         return;
     }
-    LOG_DBG("Trackpad handler trigd %d", 0);
 
     struct sensor_value x, y, buttons, wheel;
     sensor_channel_get(dev, SENSOR_CHAN_XDELTA, &x);
@@ -118,6 +120,7 @@ static void handle_mouse_mode(const struct device *dev, const struct sensor_trig
 #else
     scrollDelta = wheel.val1;
 #endif
+    k_work_submit_to_queue(zmk_trackpad_work_q(), &trackpad_work);
 
     ZMK_EVENT_RAISE(new_zmk_sensor_event(
         (struct zmk_sensor_event){.sensor_index = 0,
@@ -125,12 +128,9 @@ static void handle_mouse_mode(const struct device *dev, const struct sensor_trig
                                   .channel_data = {(struct zmk_sensor_channel_data){
                                       .value = buttons, .channel = SENSOR_CHAN_BUTTONS}},
                                   .timestamp = k_uptime_get()}));
-    zmk_hid_mouse_set(btns, xDelta, yDelta, scrollDelta);
-    zmk_endpoints_send_mouse_report();
 }
 
 static void zmk_trackpad_tick_handler(struct k_timer *timer) {
-    LOG_DBG("timer running");
     k_work_submit_to_queue(zmk_trackpad_work_q(), &trackpad_work);
 }
 
@@ -168,14 +168,15 @@ void zmk_trackpad_set_mouse_mode(bool mouse_mode) {
 }
 
 static int trackpad_init() {
-    button_mode = true;
-    surface_mode = true;
-    zmk_trackpad_set_mouse_mode(true);
+
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD_WORK_QUEUE_DEDICATED)
     k_work_queue_start(&trackpad_work_q, trackpad_work_stack_area,
                        K_THREAD_STACK_SIZEOF(trackpad_work_stack_area),
                        CONFIG_ZMK_TRACKPAD_DEDICATED_THREAD_PRIORITY, NULL);
 #endif
+    button_mode = true;
+    surface_mode = true;
+    zmk_trackpad_set_mouse_mode(true);
     return 0;
 }
 
