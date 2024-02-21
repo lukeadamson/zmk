@@ -385,9 +385,22 @@ config ZMK_TRACKPAD
     bool "Enable ZMK trackpad emulation"
     default n
 
+config ZMK_TRACKPAD_MOUSE_MODE
+    bool "Enable optional additional mouse emulation"
+    default n
+
 config ZMK_TRACKPAD_REVERSE_SCROLL
     bool "Reverse scroll direction of trackpad in mosue mode"
     default n
+
+config ZMK_TRACKPAD_TICK_DURATION
+    int "Trackpad tick duration in ms"
+    default 8
+
+config ZMK_TRACKPAD_MAX_FINGERS
+    int "Maximum number of fingers reported in PTP"
+    range 3 5
+    default 5
 
 config ZMK_TRACKPAD_PHYSICAL_X
     int "Maximum X size of trackpad in 0.1cm increments"

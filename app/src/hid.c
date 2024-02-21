@@ -79,7 +79,7 @@ struct zmk_hid_ptp_feature_certification_report ptp_feature_certification_report
 // Feature report for device capabilities
 struct zmk_hid_ptp_feature_capabilities_report ptp_feature_capabilities_report = {
     .report_id = ZMK_HID_REPORT_ID_FEATURE_PTP_CAPABILITIES,
-    .max_touches = 5,
+    .max_touches = CONFIG_ZMK_TRACKPAD_MAX_FINGERS,
     .pad_type = PTP_PAD_TYPE_NON_CLICKABLE};
 #endif
 
