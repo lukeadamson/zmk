@@ -78,12 +78,12 @@ static void handle_trackpad_ptp(const struct device *dev, const struct sensor_tr
     fingers[id.val1].y = y.val1;
     contacts_to_send |= BIT(id.val1);
 
-    ZMK_EVENT_RAISE(new_zmk_sensor_event(
+    raise_zmk_sensor_event(
         (struct zmk_sensor_event){.sensor_index = 0,
                                   .channel_data_size = 1,
                                   .channel_data = {(struct zmk_sensor_channel_data){
                                       .value = buttons, .channel = SENSOR_CHAN_BUTTONS}},
-                                  .timestamp = k_uptime_get()}));
+                                  .timestamp = k_uptime_get()});
 }
 
 static void zmk_trackpad_tick(struct k_work *work) {
@@ -135,12 +135,12 @@ static void handle_mouse_mode(const struct device *dev, const struct sensor_trig
 #endif
     k_work_submit_to_queue(zmk_trackpad_work_q(), &trackpad_work);
 
-    ZMK_EVENT_RAISE(new_zmk_sensor_event(
+    raise_zmk_sensor_event(
         (struct zmk_sensor_event){.sensor_index = 0,
                                   .channel_data_size = 1,
                                   .channel_data = {(struct zmk_sensor_channel_data){
                                       .value = buttons, .channel = SENSOR_CHAN_BUTTONS}},
-                                  .timestamp = k_uptime_get()}));
+                                  .timestamp = k_uptime_get()});
 }
 
 static void zmk_trackpad_tick_handler(struct k_timer *timer) {

@@ -64,7 +64,7 @@ static const struct behavior_driver_api behavior_trackpad_driver_api = {
     .binding_released = on_trackpad_keymap_binding_released,
 };
 
-BEHAVIOR_DT_INST_DEFINE(0, behavior_trackpad_init, NULL, NULL, NULL, APPLICATION,
+BEHAVIOR_DT_INST_DEFINE(0, behavior_trackpad_init, NULL, NULL, NULL, POST_KERNEL,
                         CONFIG_KERNEL_INIT_PRIORITY_DEFAULT, &behavior_trackpad_driver_api);
 
 #endif /* DT_HAS_COMPAT_STATUS_OKAY(DT_DRV_COMPAT) */
