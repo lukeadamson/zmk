@@ -25,14 +25,6 @@ static uint8_t keys_held = 0;
 
 #endif /* IS_ENABLED(CONFIG_ZMK_USB_BOOT) */
 
-#if IS_ENABLED(CONFIG_ZMK_MOUSE)
-
-static struct zmk_hid_mouse_report mouse_report = {
-    .report_id = ZMK_HID_REPORT_ID_MOUSE,
-    .body = {.buttons = 0, .d_x = 0, .d_y = 0, .d_scroll_y = 0}};
-
-#endif // IS_ENABLED(CONFIG_ZMK_MOUSE)
-
 // Keep track of how often a modifier was pressed.
 // Only release the modifier if the count is 0.
 static int explicit_modifier_counts[8] = {0, 0, 0, 0, 0, 0, 0, 0};
