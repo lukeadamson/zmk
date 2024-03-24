@@ -110,6 +110,7 @@ target_sources(app PRIVATE src/main.c)
 
 add_subdirectory(src/display/)
 add_subdirectory_ifdef(CONFIG_SETTINGS src/settings/)
+add_subdirectory(src/mouse/)
 
 if (CONFIG_ZMK_STUDIO)
   # For some reason this is failing if run from a different sub-file.
