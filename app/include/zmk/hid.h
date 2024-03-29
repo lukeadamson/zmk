@@ -27,6 +27,13 @@
 
 // See https://www.usb.org/sites/default/files/hid1_11.pdf section 6.2.2.4 Main Items
 
+#define ZMK_HID_USAGE_PAGE16(page)                                                                 \
+    HID_ITEM(HID_ITEM_TAG_USAGE_PAGE, HID_ITEM_TYPE_GLOBAL, 2), (page & 0xFF), (page >> 8 & 0xFF)
+
+#define HID_REPORT_COUNT16(count)                                                                  \
+    HID_ITEM(HID_ITEM_TAG_REPORT_COUNT, HID_ITEM_TYPE_GLOBAL, 2), (count & 0xFF),                  \
+        (count >> 8 & 0xFF)
+
 #define ZMK_HID_MAIN_VAL_DATA (0x00 << 0)
 #define ZMK_HID_MAIN_VAL_CONST (0x01 << 0)
 
@@ -321,9 +328,7 @@ static const uint8_t zmk_hid_report_desc[] = {
     // PTPHQA Blob: Necessary for < Windows 10
 
     // USAGE_PAGE (Vendor Defined)
-    0x06,
-    0xff,
-    0x00,
+    ZMK_HID_USAGE_PAGE16(0xFF00),
 
     HID_REPORT_ID(ZMK_HID_REPORT_ID_FEATURE_PTPHQA),
     // Vendor Usage 0xC5)
@@ -333,9 +338,7 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_LOGICAL_MAX16(0xFF, 0x00),
     HID_REPORT_SIZE(8),
     // Report Count (256)
-    0x96,
-    0x00,
-    0x01,
+    HID_REPORT_COUNT16(0x0100),
 
     HID_FEATURE(0x02),
     HID_END_COLLECTION,
