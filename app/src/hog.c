@@ -39,7 +39,7 @@ struct hids_report {
 } __packed;
 
 static struct hids_info info = {
-    .version = 0x0000,
+    .version = 0x1101,
     .code = 0x00,
     .flags = HIDS_NORMALLY_CONNECTABLE | HIDS_REMOTE_WAKE,
 };
@@ -200,8 +200,12 @@ static ssize_t read_hids_trackpad_certification_feature_report(struct bt_conn *c
                                                                const struct bt_gatt_attr *attr,
                                                                void *buf, uint16_t len,
                                                                uint16_t offset) {
-    uint8_t *report_body = &zmk_hid_ptp_get_feature_certification_report()->ptphqa_blob;
-    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body, 256);
+    struct zmk_hid_ptp_feature_certification_report *report =
+        zmk_hid_ptp_get_feature_certification_report();
+    LOG_DBG("Get HQA at offset %d with len %d to fetch total size %d", offset, len,
+            sizeof(report->ptphqa_blob));
+    return bt_gatt_attr_read(conn, attr, buf, len, offset, &report->ptphqa_blob,
+                             sizeof(report->ptphqa_blob));
 }
 
 static ssize_t write_hids_trackpad_mode_feature_report(struct bt_conn *conn,
