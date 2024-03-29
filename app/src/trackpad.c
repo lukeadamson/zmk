@@ -198,7 +198,7 @@ static int trackpad_init() {
 
 static int trackpad_event_listener(const zmk_event_t *eh) {
     // zmk_trackpad_set_mouse_mode(true);
-    zmk_hid_ptp_set_feature_mode_report(0);
+    // zmk_hid_ptp_set_feature_mode_report(0);
     return 0;
 }
 
