@@ -294,8 +294,7 @@ BT_GATT_SERVICE_DEFINE(
     hog_svc, BT_GATT_PRIMARY_SERVICE(BT_UUID_HIDS),
     //    BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_PROTOCOL_MODE, BT_GATT_CHRC_WRITE_WITHOUT_RESP,
     //                           BT_GATT_PERM_WRITE, NULL, write_proto_mode, &proto_mode),
-    BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_INFO, BT_GATT_CHRC_READ, BT_GATT_PERM_READ, read_hids_info,
-                           NULL, &info),
+
     BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT_MAP, BT_GATT_CHRC_READ, BT_GATT_PERM_READ_ENCRYPT,
                            read_hids_report_map, NULL, NULL),
 
@@ -357,7 +356,8 @@ BT_GATT_SERVICE_DEFINE(
     BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
                        NULL, &trackpad_selective),
 #endif
-
+    BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_INFO, BT_GATT_CHRC_READ, BT_GATT_PERM_READ, read_hids_info,
+                           NULL, &info),
     BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_CTRL_POINT, BT_GATT_CHRC_WRITE_WITHOUT_RESP,
                            BT_GATT_PERM_WRITE, NULL, write_ctrl_point, &ctrl_point));
 
@@ -393,7 +393,7 @@ void send_keyboard_report_callback(struct k_work *work) {
         }
 
         struct bt_gatt_notify_params notify_params = {
-            .attr = &hog_svc.attrs[5],
+            .attr = &hog_svc.attrs[3],
             .data = &report,
             .len = sizeof(report),
         };
@@ -445,7 +445,7 @@ void send_consumer_report_callback(struct k_work *work) {
         }
 
         struct bt_gatt_notify_params notify_params = {
-            .attr = &hog_svc.attrs[9],
+            .attr = &hog_svc.attrs[7],
             .data = &report,
             .len = sizeof(report),
         };
@@ -498,7 +498,7 @@ void send_mouse_report_callback(struct k_work *work) {
         }
 
         struct bt_gatt_notify_params notify_params = {
-            .attr = &hog_svc.attrs[13],
+            .attr = &hog_svc.attrs[11],
             .data = &report,
             .len = sizeof(report),
         };
@@ -552,7 +552,7 @@ void send_ptp_report_callback(struct k_work *work) {
         }
 
         struct bt_gatt_notify_params notify_params = {
-            .attr = &hog_svc.attrs[20],
+            .attr = &hog_svc.attrs[18],
             .data = &report,
             .len = sizeof(report),
         };
@@ -594,7 +594,7 @@ int zmk_hog_send_ptp_report_direct(struct zmk_hid_ptp_report_body *report) {
     }
 
     struct bt_gatt_notify_params notify_params = {
-        .attr = &hog_svc.attrs[20],
+        .attr = &hog_svc.attrs[18],
         .data = report,
         .len = sizeof(*report),
     };
