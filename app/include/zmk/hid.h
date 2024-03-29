@@ -322,8 +322,8 @@ static const uint8_t zmk_hid_report_desc[] = {
 
     // USAGE_PAGE (Vendor Defined)
     0x06,
-    0x00,
     0xff,
+    0x00,
 
     HID_REPORT_ID(ZMK_HID_REPORT_ID_FEATURE_PTPHQA),
     // Vendor Usage 0xC5)
