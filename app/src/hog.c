@@ -192,8 +192,10 @@ static ssize_t read_hids_trackpad_capabilities_feature_report(struct bt_conn *co
                                                               const struct bt_gatt_attr *attr,
                                                               void *buf, uint16_t len,
                                                               uint16_t offset) {
-    uint8_t *report_body = &zmk_hid_ptp_get_feature_capabilities_report()->max_touches;
-    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body, 2);
+    struct zmk_hid_ptp_feature_capabilities_report_body *report_body =
+        &zmk_hid_ptp_get_feature_capabilities_report()->body;
+    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body,
+                             sizeof(struct zmk_hid_ptp_feature_capabilities_report_body));
 }
 
 static ssize_t read_hids_trackpad_certification_feature_report(struct bt_conn *conn,
@@ -230,8 +232,9 @@ static ssize_t write_hids_trackpad_mode_feature_report(struct bt_conn *conn,
 static ssize_t read_hids_trackpad_mode_feature_report(struct bt_conn *conn,
                                                       const struct bt_gatt_attr *attr, void *buf,
                                                       uint16_t len, uint16_t offset) {
-    uint8_t *report_body = &zmk_hid_ptp_get_feature_mode_report()->mode;
-    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body, sizeof(uint8_t));
+    struct zmk_hid_ptp_feature_mode_report *report = zmk_hid_ptp_get_feature_mode_report();
+    LOG_DBG("Get PTP MODE at offset %d with len %d", offset, len);
+    return bt_gatt_attr_read(conn, attr, buf, len, offset, &report->mode, sizeof(uint8_t));
 }
 
 static ssize_t write_hids_trackpad_selective_feature_report(struct bt_conn *conn,
@@ -333,12 +336,12 @@ BT_GATT_SERVICE_DEFINE(
     BT_GATT_CCC(input_ccc_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),
     BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
                        NULL, &trackpad_report),
-    BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ,
+    BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ | BT_GATT_CHRC_WRITE,
                            BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT,
                            read_hids_trackpad_capabilities_feature_report, NULL, NULL),
     BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
                        NULL, &trackpad_capabilities),
-    BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ,
+    BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ | BT_GATT_CHRC_WRITE,
                            BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT,
                            read_hids_trackpad_certification_feature_report, NULL, NULL),
     BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
