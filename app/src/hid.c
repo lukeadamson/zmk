@@ -77,10 +77,14 @@ struct zmk_hid_ptp_feature_certification_report ptp_feature_certification_report
         0xc2}};
 
 // Feature report for device capabilities
-struct zmk_hid_ptp_feature_capabilities_report ptp_feature_capabilities_report = {
+static struct zmk_hid_ptp_feature_capabilities_report ptp_feature_capabilities_report = {
     .report_id = ZMK_HID_REPORT_ID_FEATURE_PTP_CAPABILITIES,
-    .max_touches = CONFIG_ZMK_TRACKPAD_MAX_FINGERS,
-    .pad_type = PTP_PAD_TYPE_DEPRESSIBLE};
+    .body =
+        {
+            .max_touches = CONFIG_ZMK_TRACKPAD_MAX_FINGERS,
+            .pad_type = PTP_PAD_TYPE_DEPRESSIBLE,
+        },
+};
 #endif
 
 // Keep track of how often a modifier was pressed.

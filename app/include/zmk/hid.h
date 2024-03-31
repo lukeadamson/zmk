@@ -206,7 +206,7 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_USAGE(0x42),
     HID_REPORT_COUNT(2),
     HID_REPORT_SIZE(1),
-    HID_INPUT(0x02),
+    HID_INPUT(ZMK_HID_MAIN_VAL_DATA | ZMK_HID_MAIN_VAL_VAR | ZMK_HID_MAIN_VAL_ABS),
     // Byte Padding
     HID_REPORT_COUNT(6),
     HID_INPUT(0x03),
@@ -216,7 +216,7 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_REPORT_COUNT(1),
     HID_REPORT_SIZE(3),
     HID_LOGICAL_MAX8(5),
-    HID_INPUT(0x02),
+    HID_INPUT(ZMK_HID_MAIN_VAL_DATA | ZMK_HID_MAIN_VAL_VAR | ZMK_HID_MAIN_VAL_ABS),
     // Byte padding
     HID_REPORT_SIZE(1),
     HID_REPORT_COUNT(5),
@@ -244,7 +244,7 @@ static const uint8_t zmk_hid_report_desc[] = {
     (CONFIG_ZMK_TRACKPAD_PHYSICAL_X & 0xFF),
     ((CONFIG_ZMK_TRACKPAD_PHYSICAL_X >> 8) & 0xFF),
     HID_REPORT_COUNT(1),
-    HID_INPUT(0x02),
+    HID_INPUT(ZMK_HID_MAIN_VAL_DATA | ZMK_HID_MAIN_VAL_VAR | ZMK_HID_MAIN_VAL_ABS),
 
     // Y Usage
     HID_USAGE(HID_USAGE_GD_Y),
@@ -255,12 +255,9 @@ static const uint8_t zmk_hid_report_desc[] = {
     0x46,
     (CONFIG_ZMK_TRACKPAD_PHYSICAL_Y & 0xFF),
     ((CONFIG_ZMK_TRACKPAD_PHYSICAL_Y >> 8) & 0xFF),
-    HID_INPUT(0x02),
+    HID_INPUT(ZMK_HID_MAIN_VAL_DATA | ZMK_HID_MAIN_VAL_VAR | ZMK_HID_MAIN_VAL_ABS),
     HID_END_COLLECTION,
 
-    HID_USAGE_PAGE(HID_USAGE_DIGITIZERS),
-    // Scan Time
-    HID_USAGE(HID_USAGE_DIGITIZERS_SCAN_TIME),
     // Exponent (-4)
     0x55,
     0x0C,
@@ -283,7 +280,10 @@ static const uint8_t zmk_hid_report_desc[] = {
 
     HID_REPORT_SIZE(16),
     HID_REPORT_COUNT(1),
-    HID_INPUT(0x02),
+    HID_USAGE_PAGE(HID_USAGE_DIGITIZERS),
+    // Scan Time
+    HID_USAGE(HID_USAGE_DIGITIZERS_SCAN_TIME),
+    HID_INPUT(ZMK_HID_MAIN_VAL_DATA | ZMK_HID_MAIN_VAL_VAR | ZMK_HID_MAIN_VAL_ABS),
     // Contact Count
     HID_USAGE(HID_USAGE_DIGITIZERS_CONTACT_COUNT),
     // Physical Maximum (0)
@@ -293,7 +293,7 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_LOGICAL_MAX8(0x05),
     HID_REPORT_COUNT(1),
     HID_REPORT_SIZE(8),
-    HID_INPUT(0x02),
+    HID_INPUT(ZMK_HID_MAIN_VAL_DATA | ZMK_HID_MAIN_VAL_VAR | ZMK_HID_MAIN_VAL_ABS),
 
     // Button report
     HID_USAGE_PAGE(HID_USAGE_GEN_BUTTON),
@@ -305,7 +305,7 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_LOGICAL_MAX8(1),
     HID_REPORT_SIZE(1),
     HID_REPORT_COUNT(3),
-    HID_INPUT(0x02),
+    HID_INPUT(ZMK_HID_MAIN_VAL_DATA | ZMK_HID_MAIN_VAL_VAR | ZMK_HID_MAIN_VAL_ABS),
     // Byte Padding
     HID_REPORT_SIZE(1),
     HID_REPORT_COUNT(5),
@@ -316,14 +316,11 @@ static const uint8_t zmk_hid_report_desc[] = {
     HID_USAGE_PAGE(HID_USAGE_DIGITIZERS),
     HID_REPORT_ID(ZMK_HID_REPORT_ID_FEATURE_PTP_CAPABILITIES),
     HID_USAGE(HID_USAGE_DIGITIZERS_CONTACT_COUNT_MAXIMUM),
-    HID_REPORT_SIZE(8),
-    HID_REPORT_COUNT(1),
-    HID_LOGICAL_MAX8(0x05),
-    HID_FEATURE(0x02),
-
     HID_USAGE(HID_USAGE_DIGITIZERS_PAD_TYPE),
-    HID_LOGICAL_MAX8(0x7F),
-    HID_FEATURE(0x02),
+    HID_REPORT_SIZE(4),
+    HID_REPORT_COUNT(2),
+    HID_LOGICAL_MAX8(0x0F),
+    HID_FEATURE(ZMK_HID_MAIN_VAL_DATA | ZMK_HID_MAIN_VAL_VAR | ZMK_HID_MAIN_VAL_ABS),
 
     // PTPHQA Blob: Necessary for < Windows 10
 
@@ -516,14 +513,18 @@ struct zmk_hid_ptp_feature_certification_report {
 #define PTP_PAD_TYPE_NON_CLICKABLE 0x02
 
 // Feature report for device capabilities
-struct zmk_hid_ptp_feature_capabilities_report {
-    uint8_t report_id;
+struct zmk_hid_ptp_feature_capabilities_report_body {
     // Max touches (L 4bit) and pad type (H 4bit):
     // Max touches: number 3-5
     // Pad type:    0 for Depressible, 1 for Non-depressible, 2 for Non-clickable
-    uint8_t max_touches;
-    uint8_t pad_type;
+    uint8_t max_touches : 4;
+    uint8_t pad_type : 4;
+} __packed;
 
+// Feature report for device capabilities
+struct zmk_hid_ptp_feature_capabilities_report {
+    uint8_t report_id;
+    struct zmk_hid_ptp_feature_capabilities_report_body body;
 } __packed;
 
 #endif
