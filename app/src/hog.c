@@ -21,6 +21,9 @@ LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 #if IS_ENABLED(CONFIG_ZMK_HID_INDICATORS)
 #include <zmk/hid_indicators.h>
 #endif // IS_ENABLED(CONFIG_ZMK_HID_INDICATORS)
+#if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
+#include <zmk/trackpad.h>
+#endif
 
 enum {
     HIDS_REMOTE_WAKE = BIT(0),
@@ -221,10 +224,19 @@ static ssize_t write_hids_trackpad_mode_feature_report(struct bt_conn *conn,
         return BT_GATT_ERR(BT_ATT_ERR_INVALID_ATTRIBUTE_LEN);
     }
 
+    int profile = zmk_ble_profile_index(bt_conn_get_dst(conn));
+    if (profile < 0) {
+        return BT_GATT_ERR(BT_ATT_ERR_UNLIKELY);
+    }
+
+    struct zmk_endpoint_instance endpoint = {.transport = ZMK_TRANSPORT_BLE,
+                                             .ble = {
+                                                 .profile_index = profile,
+                                             }};
     uint8_t *report = (uint8_t *)buf;
 
     LOG_DBG("Mode report set ble %d", *report);
-    zmk_hid_ptp_set_feature_mode_report(*report);
+    zmk_trackpad_set_mode_report(report, endpoint);
 
     return len;
 }

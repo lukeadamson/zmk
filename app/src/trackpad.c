@@ -2,8 +2,8 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/kernel.h>
 
-#include "zmk/mouse.h"
-#include "zmk/trackpad.h"
+#include <zmk/mouse.h>
+#include <zmk/trackpad.h>
 #include <zmk/hid.h>
 #include <zmk/endpoints.h>
 #include <zmk/event_manager.h>
@@ -29,8 +29,10 @@ static bool enabled;
 
 static int8_t xDelta, yDelta, scrollDelta;
 
-static struct zmk_ptp_finger fingers[5];
+static struct zmk_ptp_finger fingers[CONFIG_ZMK_TRACKPAD_MAX_FINGERS];
 static const struct zmk_ptp_finger empty_finger = {0};
+
+static bool mouse_modes[ZMK_ENDPOINT_COUNT];
 
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD_WORK_QUEUE_DEDICATED)
 K_THREAD_STACK_DEFINE(trackpad_work_stack_area, CONFIG_ZMK_TRACKPAD_DEDICATED_THREAD_STACK_SIZE);
@@ -167,22 +169,19 @@ void zmk_trackpad_set_mouse_mode(bool mouse_mode) {
     mousemode = mouse_mode;
     sensor_attr_set(trackpad, SENSOR_CHAN_ALL, SENSOR_ATTR_CONFIGURATION, &attr);
     if (mouse_mode) {
-        // k_timer_stop(&trackpad_tick);
-
         if (sensor_trigger_set(trackpad, &trigger, handle_mouse_mode) < 0) {
             LOG_ERR("can't set trigger mouse mode");
         };
     } else {
         zmk_hid_mouse_clear();
         zmk_endpoints_send_mouse_report();
-        // k_timer_start(&trackpad_tick, K_NO_WAIT, K_MSEC(CONFIG_ZMK_TRACKPAD_TICK_DURATION));
         if (sensor_trigger_set(trackpad, &trigger, handle_trackpad_ptp) < 0) {
             LOG_ERR("can't set trigger");
         };
     }
 }
 
-static int trackpad_init() {
+static int trackpad_init(void) {
 
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD_WORK_QUEUE_DEDICATED)
     k_work_queue_start(&trackpad_work_q, trackpad_work_stack_area,
@@ -196,13 +195,29 @@ static int trackpad_init() {
     return 0;
 }
 
+static void process_mode_report(struct k_work *_work) {
+    bool state = mouse_modes[zmk_endpoint_instance_to_index(zmk_endpoints_selected())];
+    if (mousemode != state) {
+        zmk_trackpad_set_mouse_mode(state);
+        zmk_hid_ptp_set_feature_mode_report(state ? 0 : 3);
+    }
+}
+
+static K_WORK_DEFINE(mode_changed_work, process_mode_report);
+
 static int trackpad_event_listener(const zmk_event_t *eh) {
-    // zmk_trackpad_set_mouse_mode(true);
-    // zmk_hid_ptp_set_feature_mode_report(0);
+    k_work_submit(&mode_changed_work);
     return 0;
 }
 
 static ZMK_LISTENER(trackpad, trackpad_event_listener);
 static ZMK_SUBSCRIPTION(trackpad, zmk_endpoint_changed);
+
+void zmk_trackpad_set_mode_report(uint8_t *report, struct zmk_endpoint_instance endpoint) {
+    int profile = zmk_endpoint_instance_to_index(endpoint);
+    LOG_DBG("Received report %d on endpoint %d", *report, profile);
+    mouse_modes[profile] = *report ? false : true;
+    k_work_submit(&mode_changed_work);
+}
 
 SYS_INIT(trackpad_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
