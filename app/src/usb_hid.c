@@ -16,6 +16,9 @@
 #if IS_ENABLED(CONFIG_ZMK_HID_INDICATORS)
 #include <zmk/hid_indicators.h>
 #endif // IS_ENABLED(CONFIG_ZMK_HID_INDICATORS)
+#if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
+#include <zmk/trackpad.h>
+#endif
 #include <zmk/event_manager.h>
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
@@ -152,7 +155,10 @@ static int set_report_cb(const struct device *dev, struct usb_setup_packet *setu
         } else {
             struct zmk_hid_ptp_feature_mode_report *report =
                 (struct zmk_hid_ptp_feature_mode_report *)*data;
-            zmk_hid_ptp_set_feature_mode_report(report->mode);
+            struct zmk_endpoint_instance endpoint = {
+                .transport = ZMK_TRANSPORT_USB,
+            };
+            zmk_trackpad_set_mode_report(&report->mode, endpoint);
         }
         break;
     }

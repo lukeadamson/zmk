@@ -7,6 +7,7 @@
 #pragma once
 
 #include <zephyr/kernel.h>
+#include <zmk/endpoints_types.h>
 
 typedef uint8_t zmk_trackpad_finger_contacts_t;
 
@@ -25,3 +26,5 @@ void zmk_trackpad_set_mouse_mode(bool mouse_mode);
 void zmk_trackpad_selective_set(uint8_t selective);
 
 struct k_work_q *zmk_trackpad_work_q();
+
+void zmk_trackpad_set_mode_report(uint8_t *report, struct zmk_endpoint_instance endpoint);
