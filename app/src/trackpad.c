@@ -9,6 +9,8 @@
 #include <zmk/event_manager.h>
 #include <zmk/events/sensor_event.h>
 #include <zmk/events/endpoint_changed.h>
+#include <zmk/events/usb_conn_state_changed.h>
+#include <zmk/events/ble_active_profile_changed.h>
 #include "drivers/sensor/gen4.h"
 
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
@@ -32,7 +34,7 @@ static int8_t xDelta, yDelta, scrollDelta;
 static struct zmk_ptp_finger fingers[CONFIG_ZMK_TRACKPAD_MAX_FINGERS];
 static const struct zmk_ptp_finger empty_finger = {0};
 
-static bool mouse_modes[ZMK_ENDPOINT_COUNT];
+static bool mouse_modes[ZMK_ENDPOINT_COUNT] = {true};
 
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD_WORK_QUEUE_DEDICATED)
 K_THREAD_STACK_DEFINE(trackpad_work_stack_area, CONFIG_ZMK_TRACKPAD_DEDICATED_THREAD_STACK_SIZE);
@@ -181,20 +183,6 @@ void zmk_trackpad_set_mouse_mode(bool mouse_mode) {
     }
 }
 
-static int trackpad_init(void) {
-
-#if IS_ENABLED(CONFIG_ZMK_TRACKPAD_WORK_QUEUE_DEDICATED)
-    k_work_queue_start(&trackpad_work_q, trackpad_work_stack_area,
-                       K_THREAD_STACK_SIZEOF(trackpad_work_stack_area),
-                       CONFIG_ZMK_TRACKPAD_DEDICATED_THREAD_PRIORITY, NULL);
-#endif
-    button_mode = true;
-    surface_mode = true;
-    zmk_trackpad_set_mouse_mode(true);
-    enabled = true;
-    return 0;
-}
-
 static void process_mode_report(struct k_work *_work) {
     bool state = mouse_modes[zmk_endpoint_instance_to_index(zmk_endpoints_selected())];
     if (mousemode != state) {
@@ -205,13 +193,48 @@ static void process_mode_report(struct k_work *_work) {
 
 static K_WORK_DEFINE(mode_changed_work, process_mode_report);
 
+static int trackpad_init(void) {
+
+#if IS_ENABLED(CONFIG_ZMK_TRACKPAD_WORK_QUEUE_DEDICATED)
+    k_work_queue_start(&trackpad_work_q, trackpad_work_stack_area,
+                       K_THREAD_STACK_SIZEOF(trackpad_work_stack_area),
+                       CONFIG_ZMK_TRACKPAD_DEDICATED_THREAD_PRIORITY, NULL);
+#endif
+    button_mode = true;
+    surface_mode = true;
+    k_work_submit(&mode_changed_work);
+    enabled = true;
+    return 0;
+}
+
 static int trackpad_event_listener(const zmk_event_t *eh) {
+    // Reset to mouse mode on usb disconnection
+    if (as_zmk_usb_conn_state_changed(eh)) {
+        struct zmk_usb_conn_state_changed *usb_state = as_zmk_usb_conn_state_changed(eh);
+        if (usb_state->conn_state == ZMK_USB_CONN_NONE) {
+            struct zmk_endpoint_instance endpoint = {
+                .transport = ZMK_TRANSPORT_USB,
+            };
+            mouse_modes[zmk_endpoint_instance_to_index(endpoint)] = true;
+        }
+    }
+    // reset to mouse mode on BLE profile disconnection or unpairing
+    if (as_zmk_ble_active_profile_changed(eh)) {
+        struct zmk_ble_active_profile_changed *ble_state = as_zmk_ble_active_profile_changed(eh);
+        if (ble_state->open || !ble_state->connected) {
+            struct zmk_endpoint_instance endpoint = {.transport = ZMK_TRANSPORT_BLE,
+                                                     .ble = {.profile_index = ble_state->index}};
+            mouse_modes[zmk_endpoint_instance_to_index(endpoint)] = true;
+        }
+    }
     k_work_submit(&mode_changed_work);
     return 0;
 }
 
 static ZMK_LISTENER(trackpad, trackpad_event_listener);
 static ZMK_SUBSCRIPTION(trackpad, zmk_endpoint_changed);
+static ZMK_SUBSCRIPTION(trackpad, zmk_usb_conn_state_changed);
+static ZMK_SUBSCRIPTION(trackpad, zmk_ble_active_profile_changed);
 
 void zmk_trackpad_set_mode_report(uint8_t *report, struct zmk_endpoint_instance endpoint) {
     int profile = zmk_endpoint_instance_to_index(endpoint);
