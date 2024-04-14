@@ -34,7 +34,7 @@ static int8_t xDelta, yDelta, scrollDelta;
 static struct zmk_ptp_finger fingers[CONFIG_ZMK_TRACKPAD_MAX_FINGERS];
 static const struct zmk_ptp_finger empty_finger = {0};
 
-static bool mouse_modes[ZMK_ENDPOINT_COUNT] = {true};
+static bool mouse_modes[ZMK_ENDPOINT_COUNT] = {0};
 
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD_WORK_QUEUE_DEDICATED)
 K_THREAD_STACK_DEFINE(trackpad_work_stack_area, CONFIG_ZMK_TRACKPAD_DEDICATED_THREAD_STACK_SIZE);
@@ -185,7 +185,10 @@ void zmk_trackpad_set_mouse_mode(bool mouse_mode) {
 
 static void process_mode_report(struct k_work *_work) {
     bool state = mouse_modes[zmk_endpoint_instance_to_index(zmk_endpoints_selected())];
+    LOG_DBG("Current state %d, new state %d", mousemode, state);
     if (mousemode != state) {
+        LOG_DBG("Setting mouse mode to %d for endpoint %d", state,
+                zmk_endpoint_instance_to_index(zmk_endpoints_selected()));
         zmk_trackpad_set_mouse_mode(state);
         zmk_hid_ptp_set_feature_mode_report(state ? 0 : 3);
     }
@@ -200,6 +203,8 @@ static int trackpad_init(void) {
                        K_THREAD_STACK_SIZEOF(trackpad_work_stack_area),
                        CONFIG_ZMK_TRACKPAD_DEDICATED_THREAD_PRIORITY, NULL);
 #endif
+    for (int i = 0; i < ZMK_ENDPOINT_COUNT; i++)
+        mouse_modes[i] = true;
     button_mode = true;
     surface_mode = true;
     k_work_submit(&mode_changed_work);
@@ -228,6 +233,7 @@ static int trackpad_event_listener(const zmk_event_t *eh) {
         }
     }
     k_work_submit(&mode_changed_work);
+    LOG_DBG("Mode change evt triggered");
     return 0;
 }
 
