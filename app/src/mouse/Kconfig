@@ -34,6 +34,7 @@ endif
 
 config ZMK_TRACKPAD_FINGERS
     int "Max simultaneous fingers"
+    range 3 5
     default 5
 
 config ZMK_TRACKPAD_LOGICAL_X
@@ -47,6 +48,9 @@ config ZMK_TRACKPAD_PHYSICAL_X
 
 config ZMK_TRACKPAD_PHYSICAL_Y
     int "Physical Y"
+
+config ZMK_TRACKPAD_REVERSE_SCROLL
+    bool "Reverse scroll dir in mouse mode"
 
 endif # ZMK_TRACKPAD
 
