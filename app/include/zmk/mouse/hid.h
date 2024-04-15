@@ -354,6 +354,7 @@ void zmk_hid_mouse_movement_set(int16_t x, int16_t y);
 void zmk_hid_mouse_scroll_set(int8_t x, int8_t y);
 void zmk_hid_mouse_movement_update(int16_t x, int16_t y);
 void zmk_hid_mouse_scroll_update(int8_t x, int8_t y);
+void zmk_hid_mouse_set(uint8_t buttons, int8_t xDelta, int8_t yDelta, int8_t scrollDelta);
 void zmk_hid_mouse_clear(void);
 
 struct zmk_hid_mouse_report *zmk_mouse_hid_get_mouse_report();
@@ -361,6 +362,10 @@ struct zmk_hid_mouse_report *zmk_mouse_hid_get_mouse_report();
 
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
 
+void zmk_hid_ptp_set(struct zmk_ptp_finger finger0, struct zmk_ptp_finger finger1,
+                     struct zmk_ptp_finger finger2, struct zmk_ptp_finger finger3,
+                     struct zmk_ptp_finger finger4, uint8_t contact_count, uint16_t scan_time,
+                     uint8_t buttons);
 int zmk_mouse_hid_set_ptp_finger(struct zmk_ptp_finger finger);
 void zmk_mouse_hid_ptp_update_scan_time(void);
 void zmk_mouse_hid_ptp_clear_lifted_fingers(void);

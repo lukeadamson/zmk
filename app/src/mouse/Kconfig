@@ -18,7 +18,7 @@ endif
 
 config ZMK_TRACKPAD
     bool "Trackpad support"
-    select ENABLE_HID_INT_OUT_EP if ZMK_USB
+    # select ENABLE_HID_INT_OUT_EP if ZMK_USB
 
 if ZMK_TRACKPAD
 
