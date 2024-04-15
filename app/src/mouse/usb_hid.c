@@ -15,6 +15,10 @@
 #include <zmk/keymap.h>
 #include <zmk/event_manager.h>
 
+#if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
+#include <zmk/mouse/trackpad.h>
+#endif
+
 LOG_MODULE_DECLARE(zmk, CONFIG_ZMK_LOG_LEVEL);
 
 static const struct device *hid_dev;
@@ -64,6 +68,13 @@ static int get_report_cb(const struct device *dev, struct usb_setup_packet *setu
         *data = (uint8_t *)ptp_report;
         *len = sizeof(*ptp_report);
         break;
+    case ZMK_MOUSE_HID_REPORT_ID_FEATURE_PTP_SELECTIVE:
+        struct zmk_hid_ptp_feature_selective_report *sel_report =
+            zmk_mouse_hid_ptp_get_feature_selective_report();
+        *data = (uint8_t *)sel_report;
+        LOG_DBG("Selective report get %d", 0);
+        *len = sizeof(*sel_report);
+        break;
     case ZMK_MOUSE_HID_REPORT_ID_FEATURE_PTP_CAPABILITIES:
         LOG_WRN("Get CAPABILITIES");
         struct zmk_hid_ptp_feature_capabilities_report *cap_report =
@@ -77,6 +88,13 @@ static int get_report_cb(const struct device *dev, struct usb_setup_packet *setu
             zmk_mouse_hid_ptp_get_feature_certification_report();
         *data = (uint8_t *)cert_report;
         *len = sizeof(*cert_report);
+        break;
+    case ZMK_MOUSE_HID_REPORT_ID_FEATURE_PTP_MODE:
+        struct zmk_hid_ptp_feature_mode_report *mode_report =
+            zmk_mouse_hid_ptp_get_feature_mode_report();
+        *data = (uint8_t *)mode_report;
+        LOG_DBG("mode report get %d", 0);
+        *len = sizeof(*mode_report);
         break;
 #endif // IS_ENABLED(CONFIG_ZMK_TRACKPAD)
     default:
@@ -98,19 +116,6 @@ static int set_report_cb(const struct device *dev, struct usb_setup_packet *setu
 
     switch (setup->wValue & HID_GET_REPORT_ID_MASK) {
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
-    case ZMK_MOUSE_HID_REPORT_ID_FEATURE_PTP_CAPABILITIES:
-        LOG_DBG("PTP Capabilities");
-        // if (*len != sizeof(struct zmk_hid_led_report)) {
-        //     LOG_ERR("LED set report is malformed: length=%d", *len);
-        //     return -EINVAL;
-        // } else {
-        //     struct zmk_hid_led_report *report = (struct zmk_hid_led_report *)*data;
-        //     struct zmk_endpoint_instance endpoint = {
-        //         .transport = ZMK_TRANSPORT_USB,
-        //     };
-        //     zmk_hid_indicators_process_report(&report->body, endpoint);
-        // }
-        break;
     case ZMK_MOUSE_HID_REPORT_ID_FEATURE_PTP_MODE:
         if (*len != sizeof(struct zmk_hid_ptp_feature_mode_report)) {
             LOG_ERR("Mode set report is malformed: length=%d", *len);
@@ -118,8 +123,10 @@ static int set_report_cb(const struct device *dev, struct usb_setup_packet *setu
         } else {
             struct zmk_hid_ptp_feature_mode_report *report =
                 (struct zmk_hid_ptp_feature_mode_report *)*data;
-            LOG_DBG("PTP mode: %d", report->mode);
-            zmk_mouse_hid_ptp_set_feature_mode(report->mode);
+            struct zmk_endpoint_instance endpoint = {
+                .transport = ZMK_TRANSPORT_USB,
+            };
+            zmk_trackpad_set_mode_report(&report->mode, endpoint);
         }
         break;
     case ZMK_MOUSE_HID_REPORT_ID_FEATURE_PTP_SELECTIVE:
@@ -131,7 +138,11 @@ static int set_report_cb(const struct device *dev, struct usb_setup_packet *setu
                 (struct zmk_hid_ptp_feature_selective_report *)*data;
             LOG_DBG("PTP selective: surface: %d, button: %d", report->body.surface_switch,
                     report->body.button_switch);
-            // TODO: Do something with it!
+            struct zmk_endpoint_instance endpoint2 = {
+                .transport = ZMK_TRANSPORT_USB,
+            };
+            zmk_trackpad_set_selective_report(report->body.surface_switch,
+                                              report->body.button_switch, endpoint2);
         }
         break;
 #endif // IS_ENABLED(CONFIG_ZMK_TRACKPAD)

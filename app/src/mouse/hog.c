@@ -54,6 +54,8 @@ static struct hids_report mouse_input = {
 
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
 
+#include <zmk/mouse/trackpad.h>
+
 // Windows PTP Collection
 
 static struct hids_report ptp_input = {
@@ -162,9 +164,19 @@ static ssize_t write_hids_ptp_mode(struct bt_conn *conn, const struct bt_gatt_at
         return BT_GATT_ERR(BT_ATT_ERR_INVALID_ATTRIBUTE_LEN);
     }
 
-    uint8_t mode = *(uint8_t *)buf;
-    LOG_DBG("mode:  %d", mode);
-    // TODO: Do something with it!
+    int profile = zmk_ble_profile_index(bt_conn_get_dst(conn));
+    if (profile < 0) {
+        return BT_GATT_ERR(BT_ATT_ERR_UNLIKELY);
+    }
+
+    struct zmk_endpoint_instance endpoint = {.transport = ZMK_TRANSPORT_BLE,
+                                             .ble = {
+                                                 .profile_index = profile,
+                                             }};
+    uint8_t *report = (uint8_t *)buf;
+
+    LOG_DBG("Mode report set ble %d", *report);
+    zmk_trackpad_set_mode_report(report, endpoint);
 
     return len;
 }
@@ -190,10 +202,19 @@ static ssize_t write_hids_ptp_sel_reporting(struct bt_conn *conn, const struct b
         return BT_GATT_ERR(BT_ATT_ERR_INVALID_ATTRIBUTE_LEN);
     }
 
+    int profile = zmk_ble_profile_index(bt_conn_get_dst(conn));
+    if (profile < 0) {
+        return BT_GATT_ERR(BT_ATT_ERR_UNLIKELY);
+    }
+
     struct zmk_hid_ptp_feature_selective_report_body *report =
         (struct zmk_hid_ptp_feature_selective_report_body *)buf;
     LOG_DBG("Selective: surface: %d, button: %d", report->surface_switch, report->button_switch);
-    // TODO: Do something with it!
+    struct zmk_endpoint_instance endpoint = {.transport = ZMK_TRANSPORT_BLE,
+                                             .ble = {
+                                                 .profile_index = profile,
+                                             }};
+    zmk_trackpad_set_selective_report(report->surface_switch, report->button_switch, endpoint);
 
     return len;
 }

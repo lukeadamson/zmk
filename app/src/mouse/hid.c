@@ -106,6 +106,13 @@ void zmk_hid_mouse_clear(void) {
     memset(&mouse_report.body, 0, sizeof(mouse_report.body));
 }
 
+void zmk_hid_mouse_set(uint8_t buttons, int8_t xDelta, int8_t yDelta, int8_t scrollDelta) {
+    mouse_report.body.buttons = buttons;
+    mouse_report.body.d_x = xDelta;
+    mouse_report.body.d_y = yDelta;
+    mouse_report.body.d_scroll_y = scrollDelta;
+}
+
 struct zmk_hid_mouse_report *zmk_mouse_hid_get_mouse_report(void) {
     return &mouse_report;
 }
@@ -114,12 +121,34 @@ struct zmk_hid_mouse_report *zmk_mouse_hid_get_mouse_report(void) {
 
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
 
+#include <zmk/mouse/trackpad.h>
+
 #define FINGER_INIT(idx, _rest)                                                                    \
     { .contact_id = idx }
 
 static struct zmk_hid_ptp_report ptp_report = {
     .report_id = ZMK_MOUSE_HID_REPORT_ID_DIGITIZER,
 };
+
+void zmk_hid_ptp_set(struct zmk_ptp_finger finger0, struct zmk_ptp_finger finger1,
+                     struct zmk_ptp_finger finger2, struct zmk_ptp_finger finger3,
+                     struct zmk_ptp_finger finger4, uint8_t contact_count, uint16_t scan_time,
+                     uint8_t buttons) {
+    ptp_report.body.fingers[0] = finger0;
+    ptp_report.body.fingers[1] = finger1;
+    ptp_report.body.fingers[2] = finger2;
+#if CONFIG_ZMK_TRACKPAD_FINGERS > 3
+    ptp_report.body.fingers[3] = finger3;
+#endif
+#if CONFIG_ZMK_TRACKPAD_FINGERS > 4
+    ptp_report.body.fingers[4] = finger4;
+#endif
+    ptp_report.body.contact_count = contact_count;
+    ptp_report.body.scan_time = scan_time;
+    ptp_report.body.button1 = buttons & BIT(0);
+    ptp_report.body.button2 = buttons & BIT(1);
+    ptp_report.body.button3 = buttons & BIT(2);
+}
 
 int zmk_mouse_hid_set_ptp_finger(struct zmk_ptp_finger finger) {
     // First try to update existing
@@ -190,11 +219,15 @@ struct zmk_hid_ptp_feature_selective_report *zmk_mouse_hid_ptp_get_feature_selec
     return &selective_report;
 }
 
-void zmk_mouse_hid_ptp_set_feature_selective_report(bool surface_switch, bool button_switch);
+void zmk_mouse_hid_ptp_set_feature_selective_report(bool surface_switch, bool button_switch) {
+    selective_report.body.surface_switch = surface_switch;
+    selective_report.body.button_switch = button_switch;
+    LOG_DBG("Setting selective reporting to: %d, %d", surface_switch, button_switch);
+}
 
 struct zmk_hid_ptp_feature_mode_report mode_report = {
     .report_id = ZMK_MOUSE_HID_REPORT_ID_FEATURE_PTP_MODE,
-    .mode = 3,
+    .mode = 0,
 };
 
 struct zmk_hid_ptp_feature_mode_report *zmk_mouse_hid_ptp_get_feature_mode_report() {
@@ -237,7 +270,7 @@ static struct zmk_hid_ptp_feature_capabilities_report cap_report = {
     .body =
         {
             .max_touches = CONFIG_ZMK_TRACKPAD_FINGERS,
-            .pad_type = PTP_PAD_TYPE_DEPRESSIBLE,
+            .pad_type = PTP_PAD_TYPE_NON_CLICKABLE,
         },
 };
 
