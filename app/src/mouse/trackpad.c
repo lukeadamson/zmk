@@ -257,7 +257,7 @@ static int trackpad_event_listener(const zmk_event_t *eh) {
         }
     }
     // reset to mouse mode on BLE profile disconnection or unpairing
-    /* if (as_zmk_ble_active_profile_changed(eh)) {
+    if (as_zmk_ble_active_profile_changed(eh)) {
         struct zmk_ble_active_profile_changed *ble_state = as_zmk_ble_active_profile_changed(eh);
         if (ble_state->open || !ble_state->connected) {
             struct zmk_endpoint_instance endpoint = {.transport = ZMK_TRANSPORT_BLE,
@@ -266,7 +266,7 @@ static int trackpad_event_listener(const zmk_event_t *eh) {
             surface_modes[zmk_endpoint_instance_to_index(endpoint)] = true;
             button_modes[zmk_endpoint_instance_to_index(endpoint)] = true;
         }
-    }*/
+    }
     k_work_submit(&mode_changed_work);
     k_work_submit(&selective_changed_work);
     LOG_DBG("Mode change evt triggered");
