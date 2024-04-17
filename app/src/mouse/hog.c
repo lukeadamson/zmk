@@ -324,7 +324,7 @@ void send_mouse_report_callback(struct k_work *work) {
         }
 
         struct bt_gatt_notify_params notify_params = {
-            .attr = &mouse_hog_svc.attrs[5],
+            .attr = &mouse_hog_svc.attrs[3],
             .data = &report,
             .len = sizeof(report),
         };

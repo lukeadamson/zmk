@@ -29,7 +29,7 @@ static bool mousemode;
 static bool surface_mode;
 static bool button_mode;
 
-static int8_t xDelta, yDelta, scrollDelta;
+static int16_t xDelta, yDelta, scrollDelta;
 
 static struct zmk_ptp_finger fingers[CONFIG_ZMK_TRACKPAD_FINGERS];
 static const struct zmk_ptp_finger empty_finger = {0};
