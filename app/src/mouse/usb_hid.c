@@ -56,11 +56,6 @@ static int get_report_cb(const struct device *dev, struct usb_setup_packet *setu
     }
 
     switch (setup->wValue & HID_GET_REPORT_ID_MASK) {
-    case ZMK_MOUSE_HID_REPORT_ID_MOUSE:
-        struct zmk_hid_mouse_report *report = zmk_mouse_hid_get_mouse_report();
-        *data = (uint8_t *)report;
-        *len = sizeof(*report);
-        break;
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
     case ZMK_MOUSE_HID_REPORT_ID_DIGITIZER:
         struct zmk_hid_ptp_report *ptp_report = zmk_mouse_hid_get_ptp_report();
@@ -185,19 +180,6 @@ static int zmk_mouse_usb_hid_send_report(const uint8_t *report, size_t len) {
         return err;
     }
 }
-
-#if IS_ENABLED(CONFIG_ZMK_MOUSE)
-int zmk_mouse_usb_hid_send_mouse_report() {
-#if IS_ENABLED(CONFIG_ZMK_USB_BOOT)
-    if (hid_protocol == HID_PROTOCOL_BOOT) {
-        return -ENOTSUP;
-    }
-#endif /* IS_ENABLED(CONFIG_ZMK_USB_BOOT) */
-
-    struct zmk_hid_mouse_report *report = zmk_mouse_hid_get_mouse_report();
-    return zmk_mouse_usb_hid_send_report((uint8_t *)report, sizeof(*report));
-}
-#endif // IS_ENABLED(CONFIG_ZMK_MOUSE)
 
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
 int zmk_mouse_usb_hid_send_ptp_report() {
