@@ -88,16 +88,16 @@ void zmk_hid_mouse_movement_update(int16_t x, int16_t y) {
 }
 
 void zmk_hid_mouse_scroll_set(int8_t x, int8_t y) {
-    mouse_report.body.d_scroll_x = x;
+    // mouse_report.body.d_scroll_x = x;
     mouse_report.body.d_scroll_y = y;
-    LOG_DBG("Mouse scroll set to %d/%d", mouse_report.body.d_scroll_x,
+    LOG_DBG("Mouse scroll set to %d/%d", mouse_report.body.d_scroll_y,
             mouse_report.body.d_scroll_y);
 }
 
 void zmk_hid_mouse_scroll_update(int8_t x, int8_t y) {
-    mouse_report.body.d_scroll_x += x;
+    // mouse_report.body.d_scroll_x += x;
     mouse_report.body.d_scroll_y += y;
-    LOG_DBG("Mouse scroll updated to X: %d/%d", mouse_report.body.d_scroll_x,
+    LOG_DBG("Mouse scroll updated to X: %d/%d", mouse_report.body.d_scroll_y,
             mouse_report.body.d_scroll_y);
 }
 

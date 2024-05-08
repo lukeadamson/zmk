@@ -443,4 +443,4 @@ ZMK_SUBSCRIPTION(stp_indicators, zmk_usb_conn_state_changed);
 ZMK_SUBSCRIPTION(stp_indicators, zmk_ble_active_profile_changed);
 ZMK_SUBSCRIPTION(stp_indicators, zmk_hid_indicators_changed);
 
-SYS_INIT(zmk_stp_indicators_init, APPLICATION, CONFIG_APPLICATION_INIT_PRIORITY);
+SYS_INIT(zmk_stp_indicators_init, POST_KERNEL, CONFIG_APPLICATION_INIT_PRIORITY);

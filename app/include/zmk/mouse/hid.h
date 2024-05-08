@@ -119,12 +119,6 @@ static const uint8_t zmk_mouse_hid_report_desc[] = {
     HID_REPORT_SIZE(0x10),
     HID_REPORT_COUNT(0x03),
     HID_INPUT(ZMK_HID_MAIN_VAL_DATA | ZMK_HID_MAIN_VAL_VAR | ZMK_HID_MAIN_VAL_REL),
-    HID_USAGE_PAGE(HID_USAGE_CONSUMER),
-    HID_USAGE16(HID_USAGE_CONSUMER_AC_PAN),
-    HID_LOGICAL_MIN16(0xFF, -0x7F),
-    HID_LOGICAL_MAX16(0xFF, 0x7F),
-    HID_REPORT_COUNT(0x01),
-    HID_INPUT(ZMK_HID_MAIN_VAL_DATA | ZMK_HID_MAIN_VAL_VAR | ZMK_HID_MAIN_VAL_REL),
     HID_END_COLLECTION,
     HID_END_COLLECTION,
 #endif // IS_ENABLED(CONFIG_ZMK_MOUSE)
@@ -249,7 +243,7 @@ struct zmk_hid_mouse_report_body {
     int16_t d_x;
     int16_t d_y;
     int16_t d_scroll_y;
-    int16_t d_scroll_x;
+    // int16_t d_scroll_x;
 } __packed;
 
 struct zmk_hid_mouse_report {
