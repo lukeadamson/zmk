@@ -47,11 +47,6 @@ enum {
     HIDS_FEATURE = 0x03,
 };
 
-static struct hids_report mouse_input = {
-    .id = ZMK_MOUSE_HID_REPORT_ID_MOUSE,
-    .type = HIDS_INPUT,
-};
-
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
 
 #include <zmk/mouse/trackpad.h>
@@ -106,13 +101,6 @@ static ssize_t read_hids_report_map(struct bt_conn *conn, const struct bt_gatt_a
                                     void *buf, uint16_t len, uint16_t offset) {
     return bt_gatt_attr_read(conn, attr, buf, len, offset, zmk_mouse_hid_report_desc,
                              sizeof(zmk_mouse_hid_report_desc));
-}
-
-static ssize_t read_hids_mouse_input_report(struct bt_conn *conn, const struct bt_gatt_attr *attr,
-                                            void *buf, uint16_t len, uint16_t offset) {
-    struct zmk_hid_mouse_report_body *report_body = &zmk_mouse_hid_get_mouse_report()->body;
-    return bt_gatt_attr_read(conn, attr, buf, len, offset, report_body,
-                             sizeof(struct zmk_hid_mouse_report_body));
 }
 
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
@@ -248,12 +236,6 @@ BT_GATT_SERVICE_DEFINE(
     BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT_MAP, BT_GATT_CHRC_READ, BT_GATT_PERM_READ_ENCRYPT,
                            read_hids_report_map, NULL, NULL),
 
-    BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,
-                           BT_GATT_PERM_READ_ENCRYPT, read_hids_mouse_input_report, NULL, NULL),
-    BT_GATT_CCC(input_ccc_changed, BT_GATT_PERM_READ_ENCRYPT | BT_GATT_PERM_WRITE_ENCRYPT),
-    BT_GATT_DESCRIPTOR(BT_UUID_HIDS_REPORT_REF, BT_GATT_PERM_READ_ENCRYPT, read_hids_report_ref,
-                       NULL, &mouse_input),
-
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
     BT_GATT_CHARACTERISTIC(BT_UUID_HIDS_REPORT, BT_GATT_CHRC_READ | BT_GATT_CHRC_NOTIFY,
                            BT_GATT_PERM_READ_ENCRYPT, read_hids_ptp_input_report, NULL, NULL),
@@ -312,57 +294,6 @@ K_THREAD_STACK_DEFINE(mouse_hog_q_stack, CONFIG_ZMK_BLE_THREAD_STACK_SIZE);
 
 static struct k_work_q mouse_hog_work_q;
 
-K_MSGQ_DEFINE(zmk_hog_mouse_msgq, sizeof(struct zmk_hid_mouse_report_body),
-              CONFIG_ZMK_BLE_MOUSE_REPORT_QUEUE_SIZE, 4);
-
-void send_mouse_report_callback(struct k_work *work) {
-    struct zmk_hid_mouse_report_body report;
-    while (k_msgq_get(&zmk_hog_mouse_msgq, &report, K_NO_WAIT) == 0) {
-        struct bt_conn *conn = destination_connection();
-        if (conn == NULL) {
-            return;
-        }
-
-        struct bt_gatt_notify_params notify_params = {
-            .attr = &mouse_hog_svc.attrs[3],
-            .data = &report,
-            .len = sizeof(report),
-        };
-
-        int err = bt_gatt_notify_cb(conn, &notify_params);
-        if (err == -EPERM) {
-            bt_conn_set_security(conn, BT_SECURITY_L2);
-        } else if (err) {
-            LOG_DBG("Error notifying %d", err);
-        }
-
-        bt_conn_unref(conn);
-    }
-};
-
-K_WORK_DEFINE(hog_mouse_work, send_mouse_report_callback);
-
-int zmk_mouse_hog_send_mouse_report(struct zmk_hid_mouse_report_body *report) {
-    int err = k_msgq_put(&zmk_hog_mouse_msgq, report, K_MSEC(100));
-    if (err) {
-        switch (err) {
-        case -EAGAIN: {
-            LOG_WRN("Consumer message queue full, popping first message and queueing again");
-            struct zmk_hid_mouse_report_body discarded_report;
-            k_msgq_get(&zmk_hog_mouse_msgq, &discarded_report, K_NO_WAIT);
-            return zmk_mouse_hog_send_mouse_report(report);
-        }
-        default:
-            LOG_WRN("Failed to queue mouse report to send (%d)", err);
-            return err;
-        }
-    }
-
-    k_work_submit_to_queue(&mouse_hog_work_q, &hog_mouse_work);
-
-    return 0;
-};
-
 #if IS_ENABLED(CONFIG_ZMK_TRACKPAD)
 
 K_MSGQ_DEFINE(zmk_hog_ptp_msgq, sizeof(struct zmk_hid_ptp_report_body),
@@ -377,7 +308,7 @@ void send_ptp_report_callback(struct k_work *work) {
         }
 
         struct bt_gatt_notify_params notify_params = {
-            .attr = &mouse_hog_svc.attrs[7],
+            .attr = &mouse_hog_svc.attrs[3],
             .data = &report,
             .len = sizeof(report),
         };
