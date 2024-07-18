@@ -24,7 +24,6 @@
         zmk,backlight = &backlight;
         zmk,matrix_transform = &default_transform;
         zmk,battery = &vbatt;
-        zephyr,console = &cdc_acm_uart;
         zmk,profileswitch = &profileswitch;
         zmk,indicators = &led_strip;
     };
@@ -124,11 +123,8 @@
     status = "okay";
 };
 
-&usbd {
+zephyr_udc0: &usbd {
     status = "okay";
-    cdc_acm_uart: cdc_acm_uart {
-    compatible = "zephyr,cdc-acm-uart";
-  };
 };
 
 
