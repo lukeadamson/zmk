@@ -273,10 +273,10 @@ static int trackpad_event_listener(const zmk_event_t *eh) {
     return 0;
 }
 
-static ZMK_LISTENER(trackpad, trackpad_event_listener);
-static ZMK_SUBSCRIPTION(trackpad, zmk_endpoint_changed);
-static ZMK_SUBSCRIPTION(trackpad, zmk_usb_conn_state_changed);
-static ZMK_SUBSCRIPTION(trackpad, zmk_ble_active_profile_changed);
+ZMK_LISTENER(trackpad, trackpad_event_listener);
+ZMK_SUBSCRIPTION(trackpad, zmk_endpoint_changed);
+ZMK_SUBSCRIPTION(trackpad, zmk_usb_conn_state_changed);
+ZMK_SUBSCRIPTION(trackpad, zmk_ble_active_profile_changed);
 
 void zmk_trackpad_set_mode_report(uint8_t *report, struct zmk_endpoint_instance endpoint) {
     int profile = zmk_endpoint_instance_to_index(endpoint);
