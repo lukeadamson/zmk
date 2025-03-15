@@ -492,6 +492,9 @@ static int position_state_changed_listener(const zmk_event_t *ev) {
         return ZMK_EV_EVENT_BUBBLE;
     }
 
+    LOG_DBG("*** Position state changed, position: %d, state: %d, timestamp: %lld, source: %d",
+      data->position, data->state, data->timestamp, data->source);
+
     if (data->state) { // keydown
         return position_state_down(ev, data);
     } else { // keyup
